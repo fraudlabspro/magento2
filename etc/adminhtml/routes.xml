@@ -1,0 +1,12 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../../lib/internal/Magento/Framework/App/etc/routes.xsd">
+    <router id="admin">
+        <route id="fraudlabsproadmin" frontName="fraudlabsproadmin">
+            <module name="Hexasoft_FraudLabsPro" before="Magento_Backend" />
+        </route>
+    </router>
+</config>
+
+
+
+
+

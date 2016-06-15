@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <fraudlabspro>
+            <general>
+                <enable_frontend>1</enable_frontend>
+            </general>
+            <basic_settings>
+                <active>0</active>
+                <api_key></api_key>
+                <review_status>holded</review_status>
+                <reject_status>canceled</reject_status>
+            </basic_settings>
+        </fraudlabspro>
+    </default>
+</config>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../../lib/internal/Magento/Framework/Event/etc/events.xsd">
+    <event name="sales_order_save_commit_after">
+        <observer name="send_request_to_fraudlabspro" instance="Hexasoft\FraudLabsPro\Controller\Observer" method="sendRequestToFraudLabsPro" />
+    </event>
+    <event name="sales_order_place_after">
+        <observer name="sendRequestToFraudLabsProNonObserver" instance="Hexasoft\FraudLabsPro\Controller\Observer" method="sendRequestToFraudLabsProNonObserver" />
+    </event>
+</config>
+
+ 
