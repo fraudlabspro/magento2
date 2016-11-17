@@ -14,7 +14,7 @@
         {
             "name": "FraudLabs Pro",
             "email": "support@fraudlabspro.com",
-            "homepage": "https://www.fraudlabspro.com/",
+            "homepage": "https://www.fraudlabspro.com/"
         }
     ],
     "autoload": {
