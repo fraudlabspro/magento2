@@ -1,105 +1,60 @@
 <?php
 namespace Hexasoft\FraudLabsPro\Block\Adminhtml\Order\View;
 
-class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info
-{
-     protected $registry;
-     protected $_order;
-      protected $scopeConfig;
-     protected $_objectManager;  
-        
-    public function __construct(\Magento\Framework\Registry $registry, \Magento\Framework\ObjectManagerInterface $objectManager, \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig)
-    {	
-        $this->registry = $registry;
-        $this->_objectManager = $objectManager;
-        $this->scopeConfig = $scopeConfig;
-        $this->_order = $this->registry->registry('current_order');
-        
-       
-    } 
+class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
+	protected $registry;
+	protected $_order;
+	protected $scopeConfig;
+	protected $_objectManager;
+
+    public function __construct(\Magento\Framework\Registry $registry, \Magento\Framework\ObjectManagerInterface $objectManager, \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig){
+		$this->registry = $registry;
+		$this->_objectManager = $objectManager;
+		$this->scopeConfig = $scopeConfig;
+		$this->_order = $this->registry->registry('current_order');
+    }
 
     protected function _getCollectionClass(){
-        return 'directory/country';
+		return 'directory/country';
     }
-        
+
     public function toHtml(){
-	file_put_contents('mytesting.log', "enter\n", FILE_APPEND);
-	$rejectStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/reject_status',\Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-	file_put_contents('mytesting.log', "after rejectStatus\n", FILE_APPEND);
-        $order = $this->_order;
-			if(!empty($order))
-			{
-				$data = unserialize($order->getfraudlabspro_response());
-				file_put_contents('mytesting.log', "isempty found\n", FILE_APPEND);
-			}
-            if(isset($_GET['approve']) || isset($_GET['fraud'])){
-               // echo '<pre>'; print_r($_GET['fraud']);
-                $data['fraudlabspro_status'] = (isset($_GET['approve'])) ? 'APPROVE' : 'REJECT';
-                $apiKey = (isset($_GET['apiKey'])) ? $_GET['apiKey'] : '';
-                $flpId = (isset($_GET['flpId'])) ? $_GET['flpId'] : '';
+		$rejectStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/reject_status',\Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
+		$order = $this->_order;
 
-                for($i=0; $i<3; $i++){
-                   $response = $this->_get('https://api.fraudlabspro.com/v1/order/feedback?key=' . rawurlencode($apiKey) . '&action=' . $data['fraudlabspro_status'] . '&id=' . rawurlencode($flpId) . '&format=json');
-                   if(is_null($result = json_decode($response, true)) === FALSE) 
-                    break;
-                 }
-/*
-                 if (isset($_GET['fraud']) && $_GET['fraud'] == 'Reject Order') {
-           
-                    switch ($rejectStatus) {
-                        
-                             case 'pending':
-                                 $order->setState(\Magento\Sales\Model\Order::STATE_NEW, true)->save();
-                                 $order->setStatus('pending', true)->save();
-                                 break;
+		if(!empty($order)){
+			$data = unserialize($order->getfraudlabspro_response());
+		}
 
-                             case 'processing':
-                                 $order->setState(\Magento\Sales\Model\Order::STATE_PROCESSING, true)->save();
-                                 $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING, true)->save();
-                                 break;
+		if(isset($_GET['approve']) || isset($_GET['fraud'])){
+			$data['fraudlabspro_status'] = (isset($_GET['approve'])) ? 'APPROVE' : 'REJECT';
+			$apiKey = (isset($_GET['apiKey'])) ? $_GET['apiKey'] : '';
+			$flpId = (isset($_GET['flpId'])) ? $_GET['flpId'] : '';
 
-                             case 'complete':
-                                 $order->setState(\Magento\Sales\Model\Order::STATE_COMPLETE, true)->save();
-                                 $order->setStatus(\Magento\Sales\Model\Order::STATE_COMPLETE, true)->save();
-                                 break;
+			$this->_get('https://api.fraudlabspro.com/v1/order/feedback?' . http_build_query(array(
+				'format'	=> 'json',
+				'key'		=> $apiKey,
+				'action'	=> $data['fraudlabspro_status'],
+				'id'		=> $flpId,
+			)));
 
-                             case 'closed':
-                                 $order->setState(\Magento\Sales\Model\Order::STATE_CLOSED, true)->save();
-                                 $order->setStatus(\Magento\Sales\Model\Order::STATE_CLOSED, true)->save();
-                                  break;
+			$order->setfraudlabspro_response(serialize($data))->save();
+		}
 
-                             case 'fraud':
-                                 $order->setState(\Magento\Sales\Model\Order::STATUS_FRAUD, true)->save();
-                                 $order->setStatus(\Magento\Sales\Model\Order::STATUS_FRAUD, true)->save();
-                                  break;
+		if(!isset($data))
+			return '
+			<div class="entry-edit">
+				<div class="entry-edit-head" style="background:#cc0000;">
+					<h4 class="icon-head head-shipping-method"><a href="http://www.fraudlabspro.com" target="_blank"><img src="http://www.fraudlabspro.com/images/logo-small.png" width="163" height="20" border="0" align="absMiddle" /></a></h4>
+				</div>
 
-                             case 'canceled':
-                                 if ($order->canCancel()) {
-                                     $order->cancel()->save();
-                                 }
-                                 break;
+				<fieldset>
+					This order is not processed by FraudLabs Pro.
+				</fieldset>
+			</div>';
 
-                             case 'holded':
-                                 $order->setState(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
-                                 $order->setStatus(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
-                                 break;
-                         }
-                     }*/
-                 $order->setfraudlabspro_response(serialize($data))->save(); 
-                 
-              }
-              if(!$data) return '
-		<div class="entry-edit">
-			<div class="entry-edit-head" style="background:#cc0000;">
-				<h4 class="icon-head head-shipping-method"><a href="http://www.fraudlabspro.com" target="_blank"><img src="http://www.fraudlabspro.com/images/logo-small.png" width="163" height="20" border="0" align="absMiddle" /></a></h4>
-			</div>
-
-			<fieldset>
-				This order is not processed by FraudLabs Pro.
-			</fieldset>
-		</div>';
-                if($data['fraudlabspro_score'] > 80){
+		if($data['fraudlabspro_score'] > 80){
 			$score = '<div style="color:#FF0000;font-size:4em;margin-top:20px;"><strong>'.$data['fraudlabspro_score'].'</strong></div>';
 		}
 		elseif($data['fraudlabspro_score'] > 60){
@@ -116,9 +71,9 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info
 		}
 
 		$countryName = $this->_objectManager->create('Magento\Directory\Model\Country')->load($data['ip_country'])->getName();
-		$location = array($this->_case($data['ip_continent']), $countryName, $this->_case($data['ip_region']), $this->_case($data['ip_city']));
+		$location = array($data['ip_continent'], $countryName, $data['ip_region'], $data['ip_city']);
 		$location = array_unique($location);
-                //return $countryName;
+
 		switch($data['fraudlabspro_status']){
 			case 'REVIEW':
 				$status = '<div style="color:#FFCC00;font-size:2em;margin-top:10px;"><strong>'.$data['fraudlabspro_status'].'</strong></div>';
@@ -135,7 +90,6 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info
 			default:
 				$status = '-';
 		}
-             
 
 		$out = '
 		<div class="entry-edit">
@@ -152,7 +106,7 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info
 				<td style="width:140px; padding:5px;"><span><strong>IP Net Speed</strong> <a href="javascript:;" title="Connection speed.">[?]</a></span></td>
 				<td style="width:120px; padding:5px;"><span>' . $data['ip_netspeed'] . '</span></td>
 				<td style="width:120px; padding:5px;"><span><strong>IP ISP Name</strong> <a href="javascript:;" title="Estimated ISP of the IP address.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . $this->_case($data['ip_isp_name']) . '</span></td>
+				<td style="padding:5px;"><span>' . $data['ip_isp_name'] . '</span></td>
 			</tr>
 			<tr>
 				<td style="padding:5px;"><span><strong>IP Usage Type</strong> <a href="javascript:;" title="Estimated usage type of the IP address. For example: ISP, Commercial, Residential.">[?]</a></span></td>
@@ -217,26 +171,22 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info
 						<div style="text-align:center;padding:10px">
 							<input type="submit" name="approve" value="Approve Order" />
 							<input type="submit" name="fraud" value="Reject Order" />
-						</div>';
-         
-                  
-                        '</form>
-                        </td>
+						</div>
+					</form>
+				</td>
 			</tr>';
-}
-             
+		}
 
 		$out .= '
-	       </table>
-	     </fieldset>
+				</table>
+			</fieldset>
 		</div>';
 
 		return $out;
-		//return parent::_toHtml();
     }
 
 	 private function _get($url){
-           
+
 		 $ch = curl_init();
 
 		curl_setopt($ch, CURLOPT_FAILONERROR, 1);
@@ -253,12 +203,6 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info
 
 		curl_close($ch);
 
-		return false; 
-	} 
-
-    public function _case($s){
-        $s = ucwords(strtolower($s));
-        $s = preg_replace_callback("/( [ a-zA-Z]{1}')([a-zA-Z0-9]{1})/s",create_function('$matches','return $matches[1].strtoupper($matches[2]);'),$s);
-        return $s; 
-    }  
+		return false;
+	}
 }
