@@ -17,12 +17,20 @@ The features of this extension are:
 This extension requires a valid API key to function. Please sign up for a free API key at http://www.fraudlabspro.com/sign-up.
 
 # Installation
-In order to install the extension in Magento 2.0 the steps are:
+
+## Install Manually
 
 1.  Download the FraudLabs Pro plugin from the FraudLabs Pro GitHub site at https://github.com/fraudlabspro/magento2.
-2.	Unzip the file and upload it to the Magento installation root directory as: magento2/app/code/
-3.	Login to the Magento admin page and disable the cache under the System -> Cache Management.
-4.	At the Linux server command line enter the following command in the Magento root directory: php bin/magento setup:upgrade
-5.	Then the plugin settings will be available in the admin panel by opening the Stores -> Configuration.
+2.  Create a folder and name as Hexasoft.
+3.  Unzip the file that downloaded from FraudLabs Pro GitHub site, rename it to FraudLabsPro and transfer it into Hexasoft folder.
+4.  Upload the Hexasoft folder to the subdirectory of Magento installation root directory as: magento2/app/code/
+5.  Login to the Magento admin page and disable the cache under the System -> Cache Management page. 
+6.  At the Linux server command line enter the following command in the Magento root directory: php bin/magento setup:upgrade
+
+## Install via Composer
+
+1.  At the Linux server command line enter the following command in Magento root directory: composer require hexasoft/module-fraudlabspro
+2.  Next continue by entering: composer update
+3.  Then follow by: php bin/magento setup:upgrade
 
 For more detail information please refer http://www.fraudlabspro.com/tutorials/how-to-install-fraudlabs-pro-plugin-on-magento2.
