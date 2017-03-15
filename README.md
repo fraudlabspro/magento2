@@ -20,7 +20,7 @@ This extension requires a valid API key to function. Please sign up for a free A
 In order to install the extension in Magento 2.0 the steps are:
 
 1.  Download the FraudLabs Pro plugin from the FraudLabs Pro GitHub site at https://github.com/fraudlabspro/magento2.
-2.	Unzip the file and upload it to the Magento installation root directory and the subdirectory.
+2.	Unzip the file and upload it to the Magento installation root directory as: magento2/app/code/
 3.	Login to the Magento admin page and disable the cache under the System -> Cache Management.
 4.	At the Linux server command line enter the following command in the Magento root directory: php bin/magento setup:upgrade
 5.	Then the plugin settings will be available in the admin panel by opening the Stores -> Configuration.
