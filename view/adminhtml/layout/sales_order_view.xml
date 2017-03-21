@@ -1,15 +1,13 @@
 <?xml version="1.0"?>
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
-    <update handle="formkey"/>
-    <update handle="sales_order_view_fraudlabsproresult"/>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <referenceBlock name="order_info">
-            <action method="setTemplate">
-                <argument name="template" translate="true" xsi:type="string">fraudlabspro/order/view/info.phtml</argument>
-            </action>
-        </referenceBlock>
-        <referenceBlock name="order_info">
-            <block class="Hexasoft\FraudLabsPro\Block\Adminhtml\Order\View\Info" name="fraudlabspro_sales_order_info" template="fraudlabspro/order/view/info.phtml" />
-        </referenceBlock>
+        <referenceContainer name="left">
+            <referenceBlock name="sales_order_tabs">
+                <action method="addTab">
+                    <argument name="name" xsi:type="string">order_fraudlabspro</argument>
+                    <argument name="block" xsi:type="string">Hexasoft\FraudLabsPro\Block\Adminhtml\Order\View\Tab\Flpsummary</argument>
+                </action>
+            </referenceBlock>
+        </referenceContainer>
     </body>
 </page>

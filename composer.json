@@ -1,7 +1,7 @@
 {
     "name": "hexasoft/module-fraudlabspro",
     "description": "FraudLabs Pro Fraud Prevention plugin that screen the order transaction for online frauds. Fraud Prevention extension for Magento 2.",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "type": "magento2-module",
     "require": {
         "php": "~5.5.0|~5.6.0|~7.0.0"

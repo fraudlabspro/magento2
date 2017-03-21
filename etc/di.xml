@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="/../../../../../lib/internal/Magento/Framework/ObjectManager/etc/config.xsd">
-    <preference for="Magento\Sales\Block\Adminhtml\Order\View\Info" type="Hexasoft\FraudLabsPro\Block\Adminhtml\Order\View\Info"/>
+    <!--preference for="Magento\Sales\Block\Adminhtml\Order\View\Info" type="Hexasoft\FraudLabsPro\Block\Adminhtml\Order\View\Info"/-->
     <virtualType name="Magento\Sales\Model\ResourceModel\Order\Grid" type="Magento\Sales\Model\ResourceModel\Grid">
         <arguments>
             <argument name="columns" xsi:type="array">

@@ -164,6 +164,8 @@ class Observer implements ObserverInterface {
                     break;
 
                 case 'holded':
+                    $order->setHoldBeforeState($order->getState());
+                    $order->setHoldBeforeStatus($order->getStatus());
                     $order->setState(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
                     $order->setStatus(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
                     break;
@@ -205,6 +207,8 @@ class Observer implements ObserverInterface {
                     break;
 
                 case 'holded':
+                    $order->setHoldBeforeState($order->getState());
+                    $order->setHoldBeforeStatus($order->getStatus());
                     $order->setState(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
                     $order->setStatus(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
                     break;
