@@ -27,15 +27,16 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 			$data = unserialize($order->getfraudlabspro_response());
 		}
 
-		if(isset($_GET['approve']) || isset($_GET['fraud'])){
-			$data['fraudlabspro_status'] = (isset($_GET['approve'])) ? 'APPROVE' : 'REJECT';
-			$apiKey = (isset($_GET['apiKey'])) ? $_GET['apiKey'] : '';
-			$flpId = (isset($_GET['flpId'])) ? $_GET['flpId'] : '';
+		if(filter_input(INPUT_GET, 'approve') || filter_input(INPUT_GET, 'reject') || filter_input(INPUT_GET, 'reject-blacklist')){
+			$data['fraudlabspro_status'] = (filter_input(INPUT_GET, 'approve')) ? 'APPROVE' : 'REJECT';
+			$action = (filter_input(INPUT_GET, 'approve')) ? 'APPROVE' : ((filter_input(INPUT_GET, 'reject')) ? 'REJECT' : 'REJECT_BLACKLIST');
+			$apiKey = filter_input(INPUT_GET, 'apiKey');
+			$flpId = filter_input(INPUT_GET, 'flpId');
 
 			$this->_get('https://api.fraudlabspro.com/v1/order/feedback?' . http_build_query(array(
 				'format'	=> 'json',
 				'key'		=> $apiKey,
-				'action'	=> $data['fraudlabspro_status'],
+				'action'	=> $action,
 				'id'		=> $flpId,
 			)));
 
@@ -157,20 +158,21 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 			</tr>
 			<tr>
 				<td style="padding:5px;"><span><strong>Link</strong></span></td>
-				<td colspan="6" style="padding:5px;"><span><a href="http://www.fraudlabspro.com/merchant/transaction-details/' . $data['fraudlabspro_id'] . '" target="_blank">http://www.fraudlabspro.com/merchant/transaction-details/' . $data['fraudlabspro_id'] . '</a></span></td>
+				<td colspan="6" style="padding:5px;"><span><a href="https://www.fraudlabspro.com/merchant/transaction-details/' . $data['fraudlabspro_id'] . '" target="_blank">https://www.fraudlabspro.com/merchant/transaction-details/' . $data['fraudlabspro_id'] . '</a></span></td>
 			</tr>';
 
 		if($data['fraudlabspro_status'] == 'REVIEW'){
 			$out .= '
 			<tr>
 				<td colspan="7">
-					<form>
+					<form id="review-action">
 						<input type="hidden" name="apiKey" value="' . $data['api_key'] . '" />
 						<input type="hidden" name="flpId" value="' . $data['fraudlabspro_id'] . '" />
 
 						<div style="text-align:center;padding:10px">
 							<input type="submit" name="approve" value="Approve Order" />
-							<input type="submit" name="fraud" value="Reject Order" />
+							<input type="submit" name="reject" value="Reject Order" />
+							<input type="submit" name="reject-blacklist" value="Blacklist Order" />
 						</div>
 					</form>
 				</td>

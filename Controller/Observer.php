@@ -90,12 +90,24 @@ class Observer implements ObserverInterface {
             $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
         }
 
+        $payment_mode = $order->getPayment()->getMethod();
+        if($payment_mode === 'ccsave'){
+            $paymentMode = 'creditcard';
+        }elseif($payment_mode === 'cashondelivery'){
+            $paymentMode = 'cod';
+        }elseif($payment_mode === 'paypal_standard' || $payment_mode === 'paypal_express'){
+            $paymentMode = 'paypal';
+        }else{
+            $paymentMode = $payment_mode;
+        }
+
         $queries = array(
             'format' => 'json',
             'key' => $apiKey,
             'ip' => $ip,
             'first_name' => $order->getCustomerFirstname(),
             'last_name' => $order->getCustomerLastname(),
+            'bill_addr' => implode(" ", $billingAddress->getStreet()),
             'bill_city' => $billingAddress->getCity(),
             'bill_state' => $billingAddress->getRegion(),
             'bill_country' => $billingAddress->getCountryId(),
@@ -109,15 +121,21 @@ class Observer implements ObserverInterface {
             'currency' => $this->_storeManager->getStore()->getCurrentCurrencyCode(),
             'user_order_id' => $orderId,
             'magento_order_id' => $order->getEntityId(),
+            'payment_mode' => $paymentMode,
             'flp_checksum' => '',
             'source' => 'magento',
-            'source_version' => '1.2.0',
+            'source_version' => '2.0.5',
         );
 
-        $queries['ship_city'] = $billingAddress->getCity();
-        $queries['ship_state'] = $billingAddress->getRegion();
-        $queries['ship_zip_code'] = $billingAddress->getPostcode();
-        $queries['ship_country'] = $billingAddress->getCountryId();
+        $shippingAddress = $order->getShippingAddress();
+
+        if($shippingAddress){
+            $queries['ship_addr'] = implode(" ", $shippingAddress->getStreet());
+            $queries['ship_city'] = $shippingAddress->getCity();
+            $queries['ship_state'] = $shippingAddress->getRegion();
+            $queries['ship_zip_code'] = $shippingAddress->getPostcode();
+            $queries['ship_country'] = $shippingAddress->getCountryId();
+        }
 
         $response = $this->http('https://api.fraudlabspro.com/v1/order/screen?' . http_build_query($queries));
 

@@ -52,4 +52,3 @@ class InstallSchema implements InstallSchemaInterface {
 
 }
 
-?>
