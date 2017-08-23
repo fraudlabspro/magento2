@@ -7,3 +7,6 @@ Revision History for FraudLabs Pro Magento2
 
 2.0.5 2017-05-18
         Added "Blacklist" button.
+
+2.0.6 2017-08-24
+	Fixed IP detection when Magento is running behind a reverse proxy server.
