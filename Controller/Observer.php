@@ -86,9 +86,13 @@ class Observer implements ObserverInterface {
             $ip = $_SERVER['HTTP_CF_CONNECTING_IP'];
         }
 
-        if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && filter_var($_SERVER['HTTP_X_FORWARDED_FOR'], FILTER_VALIDATE_IP)) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        }
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+			$xip = trim(current(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])));
+
+			if (filter_var($xip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+				$ip = $xip;
+			}
+		}
 
         $payment_mode = $order->getPayment()->getMethod();
         if($payment_mode === 'ccsave'){
