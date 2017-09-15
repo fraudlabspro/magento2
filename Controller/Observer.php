@@ -87,12 +87,12 @@ class Observer implements ObserverInterface {
         }
 
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-			$xip = trim(current(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])));
+            $xip = trim(current(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])));
 
-			if (filter_var($xip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-				$ip = $xip;
-			}
-		}
+            if (filter_var($xip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                $ip = $xip;
+            }
+        }
 
         $payment_mode = $order->getPayment()->getMethod();
         if($payment_mode === 'ccsave'){
@@ -128,12 +128,14 @@ class Observer implements ObserverInterface {
             'payment_mode' => $paymentMode,
             'flp_checksum' => '',
             'source' => 'magento',
-            'source_version' => '2.0.5',
+            'source_version' => '2.0.7',
         );
 
         $shippingAddress = $order->getShippingAddress();
 
         if($shippingAddress){
+            $queries['ship_first_name'] = $shippingAddress->getFirstname();
+            $queries['ship_last_name'] = $shippingAddress->getLastname();
             $queries['ship_addr'] = implode(" ", $shippingAddress->getStreet());
             $queries['ship_city'] = $shippingAddress->getCity();
             $queries['ship_state'] = $shippingAddress->getRegion();

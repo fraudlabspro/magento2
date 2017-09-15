@@ -2,80 +2,70 @@
 
 namespace Hexasoft\FraudLabsPro\Controller\Adminhtml\Order;
 
-use Magento\Backend\App\Action;
-use Magento\Sales\Api\OrderManagementInterface;
-use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
+use Magento\Backend\App\Action;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Api\OrderManagementInterface;
 
+// Flpsummarytab class
 class FlpsummaryTab extends \Magento\Sales\Controller\Adminhtml\Order
 {
-    /**
-     * @var \Magento\Framework\View\LayoutFactory
-     */
-    protected $layoutFactory;
 
-    /**
-     * @param Action\Context $context
-     * @param \Magento\Framework\Registry $coreRegistry
-     * @param \Magento\Framework\App\Response\Http\FileFactory $fileFactory
-     * @param \Magento\Framework\Translate\InlineInterface $translateInline
-     * @param \Magento\Framework\View\Result\PageFactory $resultPageFactory
-     * @param \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
-     * @param \Magento\Framework\View\Result\LayoutFactory $resultLayoutFactory
-     * @param \Magento\Framework\Controller\Result\RawFactory $resultRawFactory
-     * @param OrderManagementInterface $orderManagement
-     * @param OrderRepositoryInterface $orderRepository
-     * @param LoggerInterface $logger
-     * @param \Magento\Framework\View\LayoutFactory $layoutFactory
-     *
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
-     * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
-     */
+    // used for LayoutFactory
+    protected $layout_factorys;
+
+    // construct function
     public function __construct(
-        Action\Context $context,
-        \Magento\Framework\Registry $coreRegistry,
-        \Magento\Framework\App\Response\Http\FileFactory $fileFactory,
-        \Magento\Framework\Translate\InlineInterface $translateInline,
-        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
-        \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-        \Magento\Framework\View\Result\LayoutFactory $resultLayoutFactory,
-        \Magento\Framework\Controller\Result\RawFactory $resultRawFactory,
-        OrderManagementInterface $orderManagement,
-        OrderRepositoryInterface $orderRepository,
-        LoggerInterface $logger,
-        \Magento\Framework\View\LayoutFactory $layoutFactory
+        Action\Context $contexts,
+        \Magento\Framework\Registry $core_registrys,
+        \Magento\Framework\App\Response\Http\FileFactory $file_factorys,
+        \Magento\Framework\Translate\InlineInterface $translate_inlines,
+        \Magento\Framework\View\Result\PageFactory $result_page_factorys,
+        \Magento\Framework\Controller\Result\JsonFactory $result_json_factorys,
+        \Magento\Framework\View\Result\LayoutFactory $result_layout_factorys,
+        \Magento\Framework\Controller\Result\RawFactory $result_raw_factorys,
+        OrderManagementInterface $order_managements,
+        OrderRepositoryInterface $order_repositorys,
+        LoggerInterface $loggers,
+        \Magento\Framework\View\LayoutFactory $layout_factorys
     ) {
-        $this->layoutFactory = $layoutFactory;
+        $this->layoutFactorys = $layout_factorys;
         parent::__construct(
-            $context,
-            $coreRegistry,
-            $fileFactory,
-            $translateInline,
-            $resultPageFactory,
-            $resultJsonFactory,
-            $resultLayoutFactory,
-            $resultRawFactory,
-            $orderManagement,
-            $orderRepository,
-            $logger
+            $contexts,
+            $core_registrys,
+            $file_factorys,
+            $translate_inlines,
+            $result_page_factorys,
+            $result_json_factorys,
+            $result_layout_factorys,
+            $result_raw_factorys,
+            $order_managements,
+            $order_repositorys,
+            $loggers
         );
     }
 
-    /**
-     * Generate order history for ajax request
-     *
-     * @return \Magento\Framework\Controller\Result\Raw
-     */
+    // execute function
     public function execute()
     {
+        // initiliase order
         $this->_initOrder();
-        $layout = $this->layoutFactory->create();
-        $html = $layout->createBlock('Hexasoft\FraudLabsPro\Block\Adminhtml\Order\View\Tab\Flpsummary')
-            ->toHtml();
-        $this->_translateInline->processResponseBody($html);
-        /** @var \Magento\Framework\Controller\Result\Raw $resultRaw */
-        $resultRaw = $this->resultRawFactory->create();
-        $resultRaw->setContents($html);
-        return $resultRaw;
+
+        //create layout
+        $layouts = $this->layoutFactorys->create();
+
+        //create block
+        $htmls = $layouts->createBlock('Hexasoft\FraudLabsPro\Block\Adminhtml\Order\View\Tab\Flpsummary')->toHtml();
+
+        // process response body of block
+        $this->_translateInline->processResponseBody($htmls);
+
+        // create result to be display
+        $results = $this->resultRawFactory->create();
+
+        // set content of body
+        $results->setContents($htmls);
+
+        return $results;
     }
 }
