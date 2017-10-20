@@ -109,8 +109,8 @@ class Observer implements ObserverInterface {
             'format' => 'json',
             'key' => $apiKey,
             'ip' => $ip,
-            'first_name' => $order->getCustomerFirstname(),
-            'last_name' => $order->getCustomerLastname(),
+            'first_name' => $billingAddress->getFirstname(),
+            'last_name' => $billingAddress->getLastname(),
             'bill_addr' => implode(" ", $billingAddress->getStreet()),
             'bill_city' => $billingAddress->getCity(),
             'bill_state' => $billingAddress->getRegion(),
@@ -128,7 +128,7 @@ class Observer implements ObserverInterface {
             'payment_mode' => $paymentMode,
             'flp_checksum' => ( isset( $_COOKIE['flp_checksum'] ) ) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.0.8',
+            'source_version' => '2.0.9',
         );
 
         $shippingAddress = $order->getShippingAddress();
