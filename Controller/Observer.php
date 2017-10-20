@@ -126,9 +126,9 @@ class Observer implements ObserverInterface {
             'user_order_id' => $orderId,
             'magento_order_id' => $order->getEntityId(),
             'payment_mode' => $paymentMode,
-            'flp_checksum' => '',
+            'flp_checksum' => ( isset( $_COOKIE['flp_checksum'] ) ) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.0.7',
+            'source_version' => '2.0.8',
         );
 
         $shippingAddress = $order->getShippingAddress();

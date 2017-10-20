@@ -13,3 +13,6 @@ Revision History for FraudLabs Pro Magento2
 
 2.0.7 2017-09-15
         Added new fields for screen/order API.
+
+2.0.8 2017-10-20
+        Fixed device information capture issue.

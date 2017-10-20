@@ -14,7 +14,7 @@ The features of this extension are:
 * Email notification of fraud orders
 * Mobile app notification of fraud orders
 
-This extension requires a valid API key to function. Please sign up for a free API key at http://www.fraudlabspro.com/sign-up.
+This extension requires a valid API key to function. Please sign up for a free API key at https://www.fraudlabspro.com/sign-up.
 
 # Installation
 
@@ -33,4 +33,4 @@ This extension requires a valid API key to function. Please sign up for a free A
 2.  Next continue by entering: composer update
 3.  Then follow by: php bin/magento setup:upgrade
 
-For more detail information please refer http://www.fraudlabspro.com/tutorials/how-to-install-fraudlabs-pro-plugin-on-magento2.
+For more detail information please refer https://www.fraudlabspro.com/tutorials/how-to-install-fraudlabs-pro-plugin-on-magento2.
