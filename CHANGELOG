@@ -19,3 +19,6 @@ Revision History for FraudLabs Pro Magento2
 
 2.0.9 2017-10-20
         Fixed name fields input for screen/order API.
+
+2.0.10 2017-10-25
+        Changed plugin configuration setting.
