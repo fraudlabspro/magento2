@@ -22,3 +22,6 @@ Revision History for FraudLabs Pro Magento2
 
 2.0.10 2017-10-25
         Changed plugin configuration setting.
+
+2.0.11 2018-07-24
+        Fix compatibility issue.
