@@ -80,17 +80,35 @@ class Observer implements ObserverInterface {
         $rejectStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/reject_status', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
         $billingAddress = $order->getBillingAddress();
-        $ip = $_SERVER['REMOTE_ADDR'];
 
-        if (isset($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP)) {
-            $ip = $_SERVER['HTTP_CF_CONNECTING_IP'];
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $headers = array(
+            'HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_INCAP_CLIENT_IP', 'HTTP_X_SUCURI_CLIENTIP'
+        );
+
+        foreach ($headers as $header) {
+            if (isset($_SERVER[$header]) && filter_var($_SERVER[$header], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                $ip = $_SERVER[$header];
+            }
         }
 
-        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        // get the data of all ips
+        $ip_sucuri = $ip_incap = $ip_cf = $ip_forwarded = '::1';
+        $ip_remoteadd = $_SERVER['REMOTE_ADDR'];
+        if(isset($_SERVER['HTTP_X_SUCURI_CLIENTIP']) && filter_var($_SERVER['HTTP_X_SUCURI_CLIENTIP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
+            $ip_sucuri = $_SERVER['HTTP_X_SUCURI_CLIENTIP'];
+        }
+        if(isset($_SERVER['HTTP_INCAP_CLIENT_IP']) && filter_var($_SERVER['HTTP_INCAP_CLIENT_IP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
+            $ip_incap = $_SERVER['HTTP_INCAP_CLIENT_IP'];
+        }
+        if(isset($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
+            $ip_cf = $_SERVER['HTTP_CF_CONNECTING_IP'];
+        }
+        if(isset($_SERVER['HTTP_X_FORWARDED_FOR'])){
             $xip = trim(current(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])));
 
             if (filter_var($xip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-                $ip = $xip;
+                $ip_forwarded = $xip;
             }
         }
 
@@ -109,6 +127,11 @@ class Observer implements ObserverInterface {
             'format' => 'json',
             'key' => $apiKey,
             'ip' => $ip,
+            'ip_remoteadd' => $ip_remoteadd,
+            'ip_sucuri' => $ip_sucuri,
+            'ip_incap' => $ip_incap,
+            'ip_forwarded' => $ip_forwarded,
+            'ip_cf' => $ip_cf,
             'first_name' => $billingAddress->getFirstname(),
             'last_name' => $billingAddress->getLastname(),
             'bill_addr' => implode(" ", $billingAddress->getStreet()),
@@ -128,7 +151,7 @@ class Observer implements ObserverInterface {
             'payment_mode' => $paymentMode,
             'flp_checksum' => ( isset( $_COOKIE['flp_checksum'] ) ) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.0.11',
+            'source_version' => '2.0.12',
         );
 
         $shippingAddress = $order->getShippingAddress();
