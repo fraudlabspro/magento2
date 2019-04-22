@@ -62,6 +62,10 @@ class Observer implements ObserverInterface {
     }
 
     public function processSendRequestToFraudLabsPro($order) {
+        if (!$this->scopeConfig->getValue('fraudlabspro/active_display/active', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
+            return true;
+        }
+
         $orderId = $order->getIncrementId();
 
         if (empty($orderId))
