@@ -150,7 +150,8 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 				<td style="padding:5px;"><span>' .  (($data['is_email_blacklist'] == 'Y') ? 'Yes' : (($data['is_email_blacklist'] == 'N') ? 'No' : '-')) . '</span></td>
 				<td style="padding:5px;"><span><strong>Credit Card Blacklist</strong> <a href="javascript:;" title="Whether the credit card is in our blacklist database.">[?]</a></span></td>
 				<td style="padding:5px;"><span>' .  (($data['is_credit_card_blacklist'] == 'Y') ? 'Yes' : (($data['is_credit_card_blacklist'] == 'N') ? 'No' : '-')) . '</span></td>
-				<td colspan="3" style="padding:5px;"><span>&nbsp;</span></td>
+				<td style="padding:5px;"><span><strong>Phone Verified</strong> <a href="javascript:;" title="Whether the phone address is verified by the customer.">[?]</a></span></td>
+				<td style="padding:5px;"><span>' .  (isset($data['is_phone_verified']) ? $data['is_phone_verified'] : 'NA') . '</span></td>
 			</tr>
 			<tr>
 				<td style="padding:5px;"><span><strong>Message</strong> <a href="javascript:;" title="FraudLabs Pro service message response.">[?]</a></span></td>

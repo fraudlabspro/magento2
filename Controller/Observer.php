@@ -155,7 +155,7 @@ class Observer implements ObserverInterface {
             'payment_mode' => $paymentMode,
             'flp_checksum' => ( isset( $_COOKIE['flp_checksum'] ) ) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.0.12',
+            'source_version' => '2.0.13',
         );
 
         $shippingAddress = $order->getShippingAddress();
@@ -177,6 +177,7 @@ class Observer implements ObserverInterface {
 
         $result['ip_address'] = $queries['ip'];
         $result['api_key'] = $apiKey;
+        $result['is_phone_verified'] = 'No';
 
         $order->setfraudlabspro_response(serialize($result))->save();
 

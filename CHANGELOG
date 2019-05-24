@@ -28,3 +28,6 @@ Revision History for FraudLabs Pro Magento2
 
 2.0.12 2019-02-21
         Capture real IP behind firewalls and proxies.
+
+2.0.13 2019-05-24
+        Added is_phone_verified field.
