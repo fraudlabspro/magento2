@@ -17,6 +17,7 @@
                 </field>
                 <field id="api_key" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>API Key</label>
+                    <comment><![CDATA[You can register for a free license key at <a href="https://www.fraudlabspro.com/sign-up?r=magento" target="_blank">https://www.fraudlabspro.com/sign-up</a> if you do not have one.]]></comment>
                 </field>
                 <field id="review_status" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>When receive Review status, change order status to</label>
@@ -25,6 +26,11 @@
                 <field id="reject_status" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>When receive Reject status, change order status to</label>
                     <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+                </field>
+                <field id="enable_notification_on" translate="label" type="multiselect" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable notification on</label>
+                    <source_model>Hexasoft\FraudLabsPro\Model\Adminhtml\System\Config\Source\View</source_model>
+                    <comment><![CDATA[You can trigger notification, such as email sending, using Zapier service. Please configure the integration in Zapier.com before enabling the options. You can visit <a href="https://www.fraudlabspro.com/resources/tutorials/how-to-enable-notification-using-zapier-in-magento2/" target="_blank">https://www.fraudlabspro.com/resources/tutorials/how-to-enable-notification-using-zapier-in-magento2/</a> for details on how to enable the zap.]]></comment>
                 </field>
             </group>
         </section>

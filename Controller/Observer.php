@@ -71,7 +71,15 @@ class Observer implements ObserverInterface {
         if (empty($orderId))
             return true;
 
-        $data = unserialize($order->getfraudlabspro_response());
+        $data = 0;
+
+        if(is_null(json_decode($order->getfraudlabspro_response(), true))){
+            if($order->getfraudlabspro_response()){
+                $data = $this->_unserialize($order->getfraudlabspro_response());
+            }
+        } else {
+             $data = json_decode($order->getfraudlabspro_response(), true);
+        }
 
         if ($data)
             return true;
@@ -82,6 +90,7 @@ class Observer implements ObserverInterface {
         $apiKey = $this->scopeConfig->getValue('fraudlabspro/active_display/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $reviewStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/review_status', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $rejectStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/reject_status', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $notificationOn = $this->scopeConfig->getValue('fraudlabspro/active_display/enable_notification_on', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
         $billingAddress = $order->getBillingAddress();
 
@@ -155,7 +164,7 @@ class Observer implements ObserverInterface {
             'payment_mode' => $paymentMode,
             'flp_checksum' => ( isset( $_COOKIE['flp_checksum'] ) ) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.0.13',
+            'source_version' => '2.1.0',
         );
 
         $shippingAddress = $order->getShippingAddress();
@@ -179,10 +188,9 @@ class Observer implements ObserverInterface {
         $result['api_key'] = $apiKey;
         $result['is_phone_verified'] = 'No';
 
-        $order->setfraudlabspro_response(serialize($result))->save();
+        $order->setfraudlabspro_response(json_encode($result))->save();
 
         if ($result['fraudlabspro_status'] == 'REVIEW') {
-
             switch ($reviewStatus) {
                 case 'pending':
                     $order->setState(\Magento\Sales\Model\Order::STATE_NEW, true)->save();
@@ -225,7 +233,6 @@ class Observer implements ObserverInterface {
         }
 
         if ($result['fraudlabspro_status'] == 'REJECT') {
-
             switch ($rejectStatus) {
                 case 'pending':
                     $order->setState(\Magento\Sales\Model\Order::STATE_NEW, true)->save();
@@ -266,12 +273,35 @@ class Observer implements ObserverInterface {
                     break;
             }
         }
+
+        if(((strpos($notificationOn, 'approve') !== FALSE) && $result['fraudlabspro_status'] == 'APPROVE') || ((strpos($notificationOn, 'review') !== FALSE) && $result['fraudlabspro_status'] == 'REVIEW') || ((strpos($notificationOn, 'reject') !== FALSE) && $result['fraudlabspro_status'] == 'REJECT')) {
+            // Use zaptrigger API to get zap information
+            $zapresponse = $this->http('https://api.fraudlabspro.com/v1/zaptrigger?' . http_build_query(array(
+                'key'		=> $apiKey,
+                'format'	=> 'json',
+            )));
+
+            if(is_null($zapresult = json_decode($zapresponse, true)) === FALSE) {
+                $target_url = $zapresult['target_url'];
+            }
+
+            if(!empty($target_url)){
+                $this->zaphttp($target_url, [
+                    'id'			=> $result['fraudlabspro_id'],
+                    'date_created'	=> gmdate('Y-m-d H:i:s'),
+                    'flp_status'	=> $result['fraudlabspro_status'],
+                    'full_name'		=> $order->getCustomerFirstname() . ' ' . $order->getCustomerLastname(),
+                    'email'			=> $order->getCustomerEmail(),
+                    'order_id'		=> $orderId,
+                ]);
+            }
+        }
+
         $this->messageManager->addSuccess(__('FraudLabs Pro Request sent.'));
         return true;
     }
 
     private function http($url) {
-
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_FAILONERROR, 1);
@@ -292,11 +322,55 @@ class Observer implements ObserverInterface {
         return false;
     }
 
+    private function zaphttp($url, $fields = '') {
+        $ch = curl_init();
+
+        if ($fields) {
+            $data_string = json_encode($fields);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+        }
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, '1.1');
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Content-Length: ' . strlen($data_string))
+        );
+
+        $response = curl_exec($ch);
+
+        if (!curl_errno($ch)) {
+            return $response;
+        }
+
+        return false;
+    }
+
     private function _hash($s, $prefix = 'fraudlabspro_') {
         $hash = $prefix . $s;
         for ($i = 0; $i < 65536; $i++)
             $hash = sha1($prefix . $hash);
         return $hash;
+    }
+
+    private function _unserialize($data){
+        if (class_exists(\Magento\Framework\Serialize\SerializerInterface::class)) {
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $serializer = $objectManager->create(\Magento\Framework\Serialize\SerializerInterface::class);
+            return $serializer->unserialize($data);
+        } else if (class_exists(\Magento\Framework\Unserialize\Unserialize::class)) {
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $serializer = $objectManager->create(\Magento\Framework\Unserialize\Unserialize::class);
+            return $serializer->unserialize($data);
+        }
     }
 
 }

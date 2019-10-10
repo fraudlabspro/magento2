@@ -7,24 +7,30 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 	protected $scopeConfig;
 	protected $_objectManager;
 
-    public function __construct(\Magento\Framework\Registry $registry, \Magento\Framework\ObjectManagerInterface $objectManager, \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig){
+	public function __construct(\Magento\Framework\Registry $registry, \Magento\Framework\ObjectManagerInterface $objectManager, \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig){
 		$this->registry = $registry;
 		$this->_objectManager = $objectManager;
 		$this->scopeConfig = $scopeConfig;
 		$this->_order = $this->registry->registry('current_order');
-    }
+	}
 
-    protected function _getCollectionClass(){
+	protected function _getCollectionClass(){
 		return 'directory/country';
-    }
+	}
 
-    public function toHtml(){
+	public function toHtml(){
 		$rejectStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/reject_status',\Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
 		$order = $this->_order;
 
 		if(!empty($order)){
-			$data = unserialize($order->getfraudlabspro_response());
+			if(is_null(json_decode($order->getfraudlabspro_response(), true))){
+				if($order->getfraudlabspro_response()){
+					$data = $this->_unserialize($order->getfraudlabspro_response());
+				}
+			} else {
+				$data = json_decode($order->getfraudlabspro_response(), true);
+			}
 		}
 
 		if(filter_input(INPUT_GET, 'approve') || filter_input(INPUT_GET, 'reject') || filter_input(INPUT_GET, 'reject-blacklist')){
@@ -40,7 +46,7 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 				'id'		=> $flpId,
 			)));
 
-			$order->setfraudlabspro_response(serialize($data))->save();
+			$order->setfraudlabspro_response(json_encode($data))->save();
 		}
 
 		if(!isset($data))
@@ -186,9 +192,9 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 		</div>';
 
 		return $out;
-    }
+	}
 
-	 private function _get($url){
+	private function _get($url){
 
 		 $ch = curl_init();
 
@@ -207,5 +213,17 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 		curl_close($ch);
 
 		return false;
+	}
+
+	private function _unserialize($data){
+		if (class_exists(\Magento\Framework\Serialize\SerializerInterface::class)) {
+			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+			$serializer = $objectManager->create(\Magento\Framework\Serialize\SerializerInterface::class);
+			return $serializer->unserialize($data);
+		} else if (class_exists(\Magento\Framework\Unserialize\Unserialize::class)) {
+			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+			$serializer = $objectManager->create(\Magento\Framework\Unserialize\Unserialize::class);
+			return $serializer->unserialize($data);
+		}
 	}
 }

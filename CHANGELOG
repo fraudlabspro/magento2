@@ -31,3 +31,6 @@ Revision History for FraudLabs Pro Magento2
 
 2.0.13 2019-05-24
         Added is_phone_verified field.
+
+2.1.0 2019-10-09
+        Support notification based on fraud status using Zapier.

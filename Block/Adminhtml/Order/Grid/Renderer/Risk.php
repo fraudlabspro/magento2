@@ -20,10 +20,26 @@ class Risk extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\AbstractRe
         if (!$result) {
             $out = '-';
         } else {
-            $data = unserialize($result);
+            if(is_null(json_decode($result, true))){
+                $data = $this->_unserialize($result);
+            } else {
+                $data = json_decode($result, true);
+            }
             $out .= $data['fraudlabspro_status'];
         }
         return $out;
+    }
+
+    private function _unserialize($data){
+        if (class_exists(\Magento\Framework\Serialize\SerializerInterface::class)) {
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $serializer = $objectManager->create(\Magento\Framework\Serialize\SerializerInterface::class);
+            return $serializer->unserialize($data);
+        } else if (class_exists(\Magento\Framework\Unserialize\Unserialize::class)) {
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $serializer = $objectManager->create(\Magento\Framework\Unserialize\Unserialize::class);
+            return $serializer->unserialize($data);
+        }
     }
 
 }
