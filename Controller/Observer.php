@@ -125,6 +125,19 @@ class Observer implements ObserverInterface {
             }
         }
 
+        $item_sku = '';
+        $qty = 0;
+        $items = $order->getAllItems();
+        foreach ($items as $item) {
+            if ($item->getParentItem()) continue;
+            $product_sku = $item->getSku();
+            if ($product_sku != '') {
+                $item_sku .= $product_sku . ':' . $item->getQtyOrdered() . ',';
+            }
+            $qty += $item->getQtyOrdered();
+        }
+        $item_sku = rtrim($item_sku, ',');
+
         $payment_mode = $order->getPayment()->getMethod();
         if($payment_mode === 'ccsave'){
             $paymentMode = 'creditcard';
@@ -157,14 +170,15 @@ class Observer implements ObserverInterface {
             'email' => $order->getCustomerEmail(),
             'user_phone' => $billingAddress->getTelephone(),
             'amount' => $order->getBaseGrandTotal(),
-            'quantity' => count($order->getAllItems()),
+            'quantity' => $qty,
             'currency' => $this->_storeManager->getStore()->getCurrentCurrencyCode(),
             'user_order_id' => $orderId,
             'magento_order_id' => $order->getEntityId(),
             'payment_mode' => $paymentMode,
             'flp_checksum' => ( isset( $_COOKIE['flp_checksum'] ) ) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.1.0',
+            'source_version' => '2.2.0',
+            'items' => $item_sku,
         );
 
         $shippingAddress = $order->getShippingAddress();

@@ -34,3 +34,6 @@ Revision History for FraudLabs Pro Magento2
 
 2.1.0 2019-10-09
         Support notification based on fraud status using Zapier.
+
+2.2.0 2020-04-10
+        Support product SKU validation.
