@@ -61,6 +61,14 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 				</fieldset>
 			</div>';
 
+		$plan_name = '';
+		$apiKeyPlan = $this->scopeConfig->getValue('fraudlabspro/active_display/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+		if($apiKeyPlan !== ''){
+			$responsePlan = $this->_get('https://api.fraudlabspro.com/v1/plan?key=' . rawurlencode($apiKeyPlan) . '&format=json');
+			$resultPlan = json_decode($responsePlan, true);
+			$plan_name = $resultPlan['plan_name'];
+		}
+
 		if($data['fraudlabspro_score'] > 80){
 			$score = '<div style="color:#FF0000;font-size:4em;margin-top:20px;"><strong>'.$data['fraudlabspro_score'].'</strong></div>';
 		}
@@ -149,7 +157,8 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 				<td style="padding:5px;"><span>' . (($data['is_proxy_ip_address'] == 'Y') ? 'Yes' : 'No') . '</span></td>
 				<td style="padding:5px;"><span><strong>BIN Found</strong> <a href="javascript:;" title="Whether the BIN information matches our BIN list.">[?]</a></span></td>
 				<td style="padding:5px;"><span>' . (($data['is_bin_found'] == 'Y') ? 'Yes' : (($data['is_bin_found'] == 'N') ? 'No' : '-')) . '</span></td>
-				<td colspan="3" style="padding:5px;"></td>
+				<td style="padding:5px;"><span><strong>Triggered Rules</strong> <a href="javascript:;" title="FraudLabs Pro Rules triggered.">[?]</a></span></td>
+				<td style="padding:5px;"><span>' . (strpos($plan_name, 'Micro') ? '<span style="color:orange">Available for <a href="https://www.fraudlabspro.com/pricing" target="_blank">Mini plan</a> onward. Please <a href="https://www.fraudlabspro.com/merchant/login" target="_blank">upgrade</a>.</span>' : ((isset($data['fraudlabspro_rules'])) ? $data['fraudlabspro_rules'] : '-' )) . '</span></td>
 			</tr>
 			<tr>
 				<td style="padding:5px;"><span><strong>Email Blacklist</strong> <a href="javascript:;" title="Whether the email address is in our blacklist database.">[?]</a></span></td>
