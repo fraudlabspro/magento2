@@ -43,3 +43,6 @@ Revision History for FraudLabs Pro Magento2
 
 2.2.2 2020-08-12
         Added csp whitelist.
+
+2.2.3 2020-09-15
+        Fixed IP address parsing issue.

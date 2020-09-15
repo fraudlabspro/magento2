@@ -125,6 +125,18 @@ class Observer implements ObserverInterface {
             }
         }
 
+        if($ip == '127.0.0.1' || $ip == '::1'){
+            if($ip_sucuri != '::1'){
+                $ip = $ip_sucuri;
+            } elseif($ip_incap != '::1'){
+                $ip = $ip_incap;
+            } elseif($ip_cf != '::1'){
+                $ip = $ip_cf;
+            } elseif($ip_forwarded != '::1'){
+                $ip = $ip_forwarded;
+            }
+        }
+
         $item_sku = '';
         $qty = 0;
         $items = $order->getAllItems();
@@ -177,7 +189,7 @@ class Observer implements ObserverInterface {
             'payment_mode' => $paymentMode,
             'flp_checksum' => ( isset( $_COOKIE['flp_checksum'] ) ) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.2.2',
+            'source_version' => '2.2.3',
             'items' => $item_sku,
         );
 
