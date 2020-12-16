@@ -44,6 +44,7 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 				'key'		=> $apiKey,
 				'action'	=> $action,
 				'id'		=> $flpId,
+				'source'	=> 'magento',
 			)));
 
 			$order->setfraudlabspro_response(json_encode($data))->save();
