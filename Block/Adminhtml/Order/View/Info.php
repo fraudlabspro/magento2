@@ -147,7 +147,6 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 			</tr>
 			<tr>
 				<td style="padding:5px;"><span><strong>Risk Country</strong> <a href="javascript:;" title="Whether IP address or billing address country is in the latest high risk list.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . (($data['is_high_risk_country'] == 'Y') ? 'Yes' : (($data['is_high_risk_country'] == 'N') ? 'No' : '-')) . '</span></td>
 				<td style="padding:5px;"><span><strong>Free Email</strong> <a href="javascript:;" title="Whether e-mail is from free e-mail provider.">[?]</a></span></td>
 				<td style="padding:5px;"><span>' . (($data['is_free_email'] == 'Y') ? 'Yes' : (($data['is_free_email'] == 'N') ? 'No' : '-')) . '</span></td>
 				<td style="padding:5px;"><span><strong>Ship Forward</strong> <a href="javascript:;" title="Whether shipping address is in database of known mail drops.">[?]</a></span></td>
