@@ -19,9 +19,12 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 	}
 
 	public function toHtml(){
+		$approveStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/approve_status',\Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 		$rejectStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/reject_status',\Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
 		$order = $this->_order;
+
+		$out = '';
 
 		if(!empty($order)){
 			if(is_null(json_decode($order->getfraudlabspro_response(), true))){
@@ -48,6 +51,103 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 			)));
 
 			$order->setfraudlabspro_response(json_encode($data))->save();
+
+			if(filter_input(INPUT_GET, 'approve')){
+				switch ($approveStatus) {
+					case 'pending':
+						$order->setState(\Magento\Sales\Model\Order::STATE_NEW, true)->save();
+						$order->setStatus('pending', true)->save();
+						break;
+
+					case 'processing':
+						$order->setState(\Magento\Sales\Model\Order::STATE_PROCESSING, true)->save();
+						$order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING, true)->save();
+						break;
+
+					case 'complete':
+						$order->setState(\Magento\Sales\Model\Order::STATE_COMPLETE, true)->save();
+						$order->setStatus(\Magento\Sales\Model\Order::STATE_COMPLETE, true)->save();
+						break;
+
+					case 'closed':
+						$order->setState(\Magento\Sales\Model\Order::STATE_CLOSED, true)->save();
+						$order->setStatus(\Magento\Sales\Model\Order::STATE_CLOSED, true)->save();
+						break;
+
+					case 'fraud':
+						$order->setState(\Magento\Sales\Model\Order::STATUS_FRAUD, true)->save();
+						$order->setStatus(\Magento\Sales\Model\Order::STATUS_FRAUD, true)->save();
+						break;
+
+					case 'canceled':
+						if ($order->canCancel()) {
+							$order->cancel()->save();
+						}
+						break;
+
+					case 'holded':
+						$order->setHoldBeforeState($order->getState());
+						$order->setHoldBeforeStatus($order->getStatus());
+						$order->setState(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
+						$order->setStatus(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
+						break;
+				}
+				$out .= "<script>
+window.onload = function() {
+	if(!window.location.hash) {
+		window.location = window.location + '#loaded';
+		window.location.reload();
+	}
+}</script>";
+			}
+			elseif(filter_input(INPUT_GET, 'reject') || filter_input(INPUT_GET, 'reject-blacklist')){
+				switch ($rejectStatus) {
+					case 'pending':
+						$order->setState(\Magento\Sales\Model\Order::STATE_NEW, true)->save();
+						$order->setStatus('pending', true)->save();
+						break;
+
+					case 'processing':
+						$order->setState(\Magento\Sales\Model\Order::STATE_PROCESSING, true)->save();
+						$order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING, true)->save();
+						break;
+
+					case 'complete':
+						$order->setState(\Magento\Sales\Model\Order::STATE_COMPLETE, true)->save();
+						$order->setStatus(\Magento\Sales\Model\Order::STATE_COMPLETE, true)->save();
+						break;
+
+					case 'closed':
+						$order->setState(\Magento\Sales\Model\Order::STATE_CLOSED, true)->save();
+						$order->setStatus(\Magento\Sales\Model\Order::STATE_CLOSED, true)->save();
+						break;
+
+					case 'fraud':
+						$order->setState(\Magento\Sales\Model\Order::STATUS_FRAUD, true)->save();
+						$order->setStatus(\Magento\Sales\Model\Order::STATUS_FRAUD, true)->save();
+						break;
+
+					case 'canceled':
+						if ($order->canCancel()) {
+							$order->cancel()->save();
+						}
+						break;
+
+					case 'holded':
+						$order->setHoldBeforeState($order->getState());
+						$order->setHoldBeforeStatus($order->getStatus());
+						$order->setState(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
+						$order->setStatus(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
+						break;
+				}
+				$out .= "<script>
+window.onload = function() {
+	if(!window.location.hash) {
+		window.location = window.location + '#loaded';
+		window.location.reload();
+	}
+}</script>";
+			}
 		}
 
 		if(!isset($data))
@@ -107,7 +207,7 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 				$status = '-';
 		}
 
-		$out = '
+		$out .= '
 		<div class="entry-edit">
 			<div class="entry-edit-head" style="background:#cc0000; padding:5px;">
 				<h4 class="icon-head head-shipping-method"><a href="http://www.fraudlabspro.com" target="_blank"><img src="http://www.fraudlabspro.com/images/logo-small.png" width="163" height="20" border="0" align="absMiddle" /></a></h4>

@@ -88,6 +88,7 @@ class Observer implements ObserverInterface {
             $_SERVER['REMOTE_ADDR'] = '175.143.8.154';
 
         $apiKey = $this->scopeConfig->getValue('fraudlabspro/active_display/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $approveStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/approve_status', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $reviewStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/review_status', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $rejectStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/reject_status', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $notificationOn = $this->scopeConfig->getValue('fraudlabspro/active_display/enable_notification_on', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
@@ -189,7 +190,7 @@ class Observer implements ObserverInterface {
             'payment_mode' => $paymentMode,
             'flp_checksum' => ( isset( $_COOKIE['flp_checksum'] ) ) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.2.3',
+            'source_version' => '2.2.4',
             'items' => $item_sku,
         );
 
@@ -215,6 +216,48 @@ class Observer implements ObserverInterface {
         $result['is_phone_verified'] = 'No';
 
         $order->setfraudlabspro_response(json_encode($result))->save();
+
+        if ($result['fraudlabspro_status'] == 'APPROVE') {
+            switch ($approveStatus) {
+                case 'pending':
+                    $order->setState(\Magento\Sales\Model\Order::STATE_NEW, true)->save();
+                    $order->setStatus('pending', true)->save();
+                    break;
+
+                case 'processing':
+                    $order->setState(\Magento\Sales\Model\Order::STATE_PROCESSING, true)->save();
+                    $order->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING, true)->save();
+                    break;
+
+                case 'complete':
+                    $order->setState(\Magento\Sales\Model\Order::STATE_COMPLETE, true)->save();
+                    $order->setStatus(\Magento\Sales\Model\Order::STATE_COMPLETE, true)->save();
+                    break;
+
+                case 'closed':
+                    $order->setState(\Magento\Sales\Model\Order::STATE_CLOSED, true)->save();
+                    $order->setStatus(\Magento\Sales\Model\Order::STATE_CLOSED, true)->save();
+                    break;
+
+                case 'fraud':
+                    $order->setState(\Magento\Sales\Model\Order::STATUS_FRAUD, true)->save();
+                    $order->setStatus(\Magento\Sales\Model\Order::STATUS_FRAUD, true)->save();
+                    break;
+
+                case 'canceled':
+                    if ($order->canCancel()) {
+                        $order->cancel()->save();
+                    }
+                    break;
+
+                case 'holded':
+                    $order->setHoldBeforeState($order->getState());
+                    $order->setHoldBeforeStatus($order->getStatus());
+                    $order->setState(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
+                    $order->setStatus(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
+                    break;
+            }
+        }
 
         if ($result['fraudlabspro_status'] == 'REVIEW') {
             switch ($reviewStatus) {

@@ -46,3 +46,6 @@ Revision History for FraudLabs Pro Magento2
 
 2.2.3 2020-09-15
         Fixed IP address parsing issue.
+
+2.2.4 2021-04-13
+        Updated Settings page to include Approve Status change.
