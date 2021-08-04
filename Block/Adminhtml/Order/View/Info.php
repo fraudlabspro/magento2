@@ -43,11 +43,12 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 			$flpId = filter_input(INPUT_GET, 'flpId');
 
 			$this->_get('https://api.fraudlabspro.com/v1/order/feedback?' . http_build_query(array(
-				'format'	=> 'json',
-				'key'		=> $apiKey,
-				'action'	=> $action,
-				'id'		=> $flpId,
-				'source'	=> 'magento',
+				'format'		=> 'json',
+				'key'			=> $apiKey,
+				'action'		=> $action,
+				'id'			=> $flpId,
+				'source'		=> 'magento',
+				'triggered_by'	=> 'manual',
 			)));
 
 			$order->setfraudlabspro_response(json_encode($data))->save();
