@@ -5,7 +5,7 @@
         <resources>
             <resource id="Magento_Backend::admin">  
                 <resource id="Hexasoft_FraudLabsPro::fraudlabspro" title="Fraud LabsPro" sortOrder="10">
-                    <resource id="Hexasoft_FraudLabsPro::fraudlabspro_fraudlabspro" title="Fraud LabsPro" sortOrder="10"> 
+                    <resource id="Hexasoft_FraudLabsPro::fraudlabspro_fraudlabspro" title="FraudLabsPro" sortOrder="10"> 
 	        	       
                     </resource>
                     <resource id="Hexasoft_FraudLabsPro::settings" title="Settings" sortOrder="20" />

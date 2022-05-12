@@ -73,7 +73,7 @@ class Observer implements ObserverInterface {
 
         $data = 0;
 
-        if(is_null(json_decode($order->getfraudlabspro_response(), true))){
+        if(is_null($order->getfraudlabspro_response())) {
             if($order->getfraudlabspro_response()){
                 $data = $this->_unserialize($order->getfraudlabspro_response());
             }
@@ -84,18 +84,15 @@ class Observer implements ObserverInterface {
         if ($data)
             return true;
 
-        if (isset($_SERVER['DEV_MODE']))
-            $_SERVER['REMOTE_ADDR'] = '175.143.8.154';
-
         $apiKey = $this->scopeConfig->getValue('fraudlabspro/active_display/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $approveStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/approve_status', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $reviewStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/review_status', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $rejectStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/reject_status', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-        $notificationOn = $this->scopeConfig->getValue('fraudlabspro/active_display/enable_notification_on', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $notificationOn = is_null($this->scopeConfig->getValue('fraudlabspro/active_display/enable_notification_on', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) ? '' : $this->scopeConfig->getValue('fraudlabspro/active_display/enable_notification_on', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
         $billingAddress = $order->getBillingAddress();
 
-        $ip = $_SERVER['REMOTE_ADDR'];
+        $ip = (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '::1');
         $headers = array(
             'HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_INCAP_CLIENT_IP', 'HTTP_X_SUCURI_CLIENTIP'
         );
@@ -107,8 +104,8 @@ class Observer implements ObserverInterface {
         }
 
         // get the data of all ips
-        $ip_sucuri = $ip_incap = $ip_cf = $ip_forwarded = '::1';
-        $ip_remoteadd = $_SERVER['REMOTE_ADDR'];
+        $ip_sucuri = $ip_incap = $ip_cf = $ip_real = $ip_forwarded = '::1';
+        $ip_remoteadd = (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '::1');
         if(isset($_SERVER['HTTP_X_SUCURI_CLIENTIP']) && filter_var($_SERVER['HTTP_X_SUCURI_CLIENTIP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
             $ip_sucuri = $_SERVER['HTTP_X_SUCURI_CLIENTIP'];
         }
@@ -117,6 +114,9 @@ class Observer implements ObserverInterface {
         }
         if(isset($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
             $ip_cf = $_SERVER['HTTP_CF_CONNECTING_IP'];
+        }
+        if(isset($_SERVER['HTTP_X_REAL_IP']) && filter_var($_SERVER['HTTP_X_REAL_IP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
+            $ip_real = $_SERVER['HTTP_X_REAL_IP'];
         }
         if(isset($_SERVER['HTTP_X_FORWARDED_FOR'])){
             $xip = trim(current(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])));
@@ -133,6 +133,8 @@ class Observer implements ObserverInterface {
                 $ip = $ip_incap;
             } elseif($ip_cf != '::1'){
                 $ip = $ip_cf;
+            } elseif($ip_real != '::1'){
+                $ip = $ip_real;
             } elseif($ip_forwarded != '::1'){
                 $ip = $ip_forwarded;
             }
@@ -171,6 +173,7 @@ class Observer implements ObserverInterface {
             'ip_incap' => $ip_incap,
             'ip_forwarded' => $ip_forwarded,
             'ip_cf' => $ip_cf,
+            'ip_real' => $ip_real,
             'first_name' => $billingAddress->getFirstname(),
             'last_name' => $billingAddress->getLastname(),
             'bill_addr' => implode(" ", $billingAddress->getStreet()),
@@ -190,7 +193,7 @@ class Observer implements ObserverInterface {
             'payment_mode' => $paymentMode,
             'flp_checksum' => ( isset( $_COOKIE['flp_checksum'] ) ) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.2.5',
+            'source_version' => '2.2.6',
             'items' => $item_sku,
         );
 
@@ -208,8 +211,11 @@ class Observer implements ObserverInterface {
 
         $response = $this->http('https://api.fraudlabspro.com/v1/order/screen?' . http_build_query($queries));
 
-        if (is_null($result = json_decode($response, true)) === TRUE)
+        if (is_null($response) === TRUE) {
             return false;
+        } else {
+            $result = json_decode($response, true);
+        }
 
         $result['ip_address'] = $queries['ip'];
         $result['api_key'] = $apiKey;
@@ -346,22 +352,23 @@ class Observer implements ObserverInterface {
         if(((strpos($notificationOn, 'approve') !== FALSE) && $result['fraudlabspro_status'] == 'APPROVE') || ((strpos($notificationOn, 'review') !== FALSE) && $result['fraudlabspro_status'] == 'REVIEW') || ((strpos($notificationOn, 'reject') !== FALSE) && $result['fraudlabspro_status'] == 'REJECT')) {
             // Use zaptrigger API to get zap information
             $zapresponse = $this->http('https://api.fraudlabspro.com/v1/zaptrigger?' . http_build_query(array(
-                'key'		=> $apiKey,
-                'format'	=> 'json',
+                'key'        => $apiKey,
+                'format'    => 'json',
             )));
 
-            if(is_null($zapresult = json_decode($zapresponse, true)) === FALSE) {
+            if(is_null($zapresponse) === FALSE) {
+                $zapresult = json_decode($zapresponse, true);
                 $target_url = $zapresult['target_url'];
             }
 
             if(!empty($target_url)){
                 $this->zaphttp($target_url, [
-                    'id'			=> $result['fraudlabspro_id'],
-                    'date_created'	=> gmdate('Y-m-d H:i:s'),
-                    'flp_status'	=> $result['fraudlabspro_status'],
-                    'full_name'		=> $order->getCustomerFirstname() . ' ' . $order->getCustomerLastname(),
-                    'email'			=> $order->getCustomerEmail(),
-                    'order_id'		=> $orderId,
+                    'id'            => $result['fraudlabspro_id'],
+                    'date_created'    => gmdate('Y-m-d H:i:s'),
+                    'flp_status'    => $result['fraudlabspro_status'],
+                    'full_name'        => $order->getCustomerFirstname() . ' ' . $order->getCustomerLastname(),
+                    'email'            => $order->getCustomerEmail(),
+                    'order_id'        => $orderId,
                 ]);
             }
         }

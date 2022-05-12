@@ -27,7 +27,7 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 		$out = '';
 
 		if(!empty($order)){
-			if(is_null(json_decode($order->getfraudlabspro_response(), true))){
+			if(is_null($order->getfraudlabspro_response())){
 				if($order->getfraudlabspro_response()){
 					$data = $this->_unserialize($order->getfraudlabspro_response());
 				}
@@ -188,7 +188,7 @@ window.onload = function() {
 		}
 
 		$countryName = $this->_objectManager->create('Magento\Directory\Model\Country')->load($data['ip_country'])->getName();
-		$location = array($data['ip_continent'], $countryName, $data['ip_region'], $data['ip_city']);
+		$location = array($countryName, $data['ip_region'], $data['ip_city']);
 		$location = array_unique($location);
 
 		switch($data['fraudlabspro_status']){
@@ -217,60 +217,47 @@ window.onload = function() {
 			<fieldset>
 			<table width="100%" border="1" bordercolor="#c0c0c0" style="border-collapse:collapse;">
 			<tr>
-				<td rowspan="3" style="width:90px; text-align:center; vertical-align:top; padding:5px;"><strong>Score</strong> <a href="javascript:;" title="Overall score between 0 and 100. 100 is the highest risk. 0 is the lowest risk.">[?]</a><br/>' . $score . '</td>
+				<td rowspan="3" style="width:90px; text-align:center; vertical-align:top; padding:5px;"><strong>FraudLabs Pro Score</strong> <a href="javascript:;" title="Risk score, 0 (low risk) - 100 (high risk).">[?]</a><br/>' . $score . '</td>
 				<td style="width:120px; padding:5px;"><span><strong>IP Address</strong></span></td>
 				<td style="width:150px; padding:5px;"><span>' . $data['ip_address'] . '</span></td>
-				<td style="width:140px; padding:5px;"><span><strong>IP Net Speed</strong> <a href="javascript:;" title="Connection speed.">[?]</a></span></td>
-				<td style="width:120px; padding:5px;"><span>' . $data['ip_netspeed'] . '</span></td>
-				<td style="width:120px; padding:5px;"><span><strong>IP ISP Name</strong> <a href="javascript:;" title="Estimated ISP of the IP address.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . $data['ip_isp_name'] . '</span></td>
-			</tr>
-			<tr>
-				<td style="padding:5px;"><span><strong>IP Usage Type</strong> <a href="javascript:;" title="Estimated usage type of the IP address. For example: ISP, Commercial, Residential.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . $data['ip_usage_type'] . '</span></td>
-				<td style="padding:5px;"><span><strong>IP Domain</strong> <a href="javascript:;" title="Estimated domain name of the IP address.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . $data['ip_domain'] . '</span></td>
-				<td style="padding:5px;"><span><strong>IP Time Zone</strong> <a href="javascript:;" title="Estimated time zone of the IP address.">[?]</a></span></td>
+				<td style="width:140px; padding:5px;"><span><strong>IP Usage Type</strong> <a href="javascript:;" title="Usage type of the IP address. E.g, ISP, Commercial, Residential.">[?]</a></span></td>
+				<td style="width:120px; padding:5px;"><span>' . ( ($data['ip_usage_type'] == 'NA' ) ? 'Not available [<a href="https://www.fraudlabspro.com/pricing" target="_blank">Upgrade</a>]' : $data['ip_usage_type'] ) . '</span></td>
+				<td style="width:120px; padding:5px;"><span><strong>IP Time Zone</strong> <a href="javascript:;" title="Time zone of the IP address.">[?]</a></span></td>
 				<td style="padding:5px;"><span>' . $data['ip_timezone'] . '</span></td>
 			</tr>
 			<tr>
-				<td style="padding:5px;"><span><strong>IP Location</strong> <a href="javascript:;" title="Estimated location of the IP address.">[?]</a></span></td>
+				<td style="padding:5px;"><span><strong>IP Location</strong> <a href="javascript:;" title="Location of the IP address.">[?]</a></span></td>
 				<td colspan="3" style="padding:5px;"><span>' . implode(', ', $location) . ' <a href="http://www.geolocation.com/' . $data['ip_address'] . '" target="_blank">[Map]</a></span></td>
-				<td style="padding:5px;"><span><strong>IP Distance</strong> <a href="javascript:;" title="Distance from IP address to Billing Location.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . $data['distance_in_mile'] . ' Miles</span></td>
+				<td style="padding:5px;"><span><strong>IP to Billing Distance</strong> <a href="javascript:;" title="Distance from IP address to Billing Location.">[?]</a></span></td>
+				<td style="padding:5px;"><span>' . ( ( $data['distance_in_km'] ) ? ( $data['distance_in_km'] . ' KM / ' . $data['distance_in_mile'] . ' Miles' ) : '-' ) . ' </span></td>
 			</tr>
 			<tr>
-				<td rowspan="4"  style="padding:5px; vertical-align:top; text-align:center;"><span><strong>FraudLabs Pro Status</strong> <a href="javascript:;" title="FraudLabs Pro status.">[?]</a><br>' . $status . '</span></td>
-				<td style="padding:5px;"><span><strong>IP Latitude</strong> <a href="javascript:;" title="Estimated latitude of the IP address.">[?]</a></span></td>
+				<td style="padding:5px;"><span><strong>IP Latitude</strong> <a href="javascript:;" title="Latitude of the IP address.">[?]</a></span></td>
 				<td style="padding:5px;"><span>' . $data['ip_latitude'] . '</span></td>
-				<td style="padding:5px;"><span><strong>IP Longitude</strong> <a href="javascript:;" title="Estimated longitude of the IP address.">[?]</a></span></td>
-				<td colspan="3" style="padding:5px;"><span>' . $data['ip_longitude'] . '</span></td>
-			</tr>
-			<tr>
-				<td style="padding:5px;"><span><strong>Risk Country</strong> <a href="javascript:;" title="Whether IP address or billing address country is in the latest high risk list.">[?]</a></span></td>
-				<td style="padding:5px;"><span><strong>Free Email</strong> <a href="javascript:;" title="Whether e-mail is from free e-mail provider.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . (($data['is_free_email'] == 'Y') ? 'Yes' : (($data['is_free_email'] == 'N') ? 'No' : '-')) . '</span></td>
-				<td style="padding:5px;"><span><strong>Ship Forward</strong> <a href="javascript:;" title="Whether shipping address is in database of known mail drops.">[?]</a></span></td>
+				<td style="padding:5px;"><span><strong>IP Longitude</strong> <a href="javascript:;" title="Longitude of the IP address.">[?]</a></span></td>
+				<td style="padding:5px;"><span>' . $data['ip_longitude'] . '</span></td>
+				<td style="padding:5px;"><span><strong>Ship Forwarder</strong> <a href="javascript:;" title="Whether shipping address is a freight forwarder address.">[?]</a></span></td>
 				<td style="padding:5px;"><span>' . (($data['is_address_ship_forward'] == 'Y') ? 'Yes' : (($data['is_address_ship_forward'] == 'N') ? 'No' : '-')) . '</span></td>
 			</tr>
 			<tr>
-				<td style="padding:5px;"><span><strong>Using Proxy</strong> <a href="javascript:;" title="Whether IP address is from Anonymous Proxy Server.">[?]</a></span></td>
+				<td rowspan="4" style="padding:5px; vertical-align:top; text-align:center;"><span><strong>FraudLabs Pro Status</strong> <a href="javascript:;" title="FraudLabs Pro status.">[?]</a><br>' . $status . '</span></td>
+				<td style="padding:5px;"><span><strong>Free Email Domain</strong> <a href="javascript:;" title="Whether e-mail is from free e-mail provider.">[?]</a></span></td>
+				<td style="padding:5px;"><span>' . (($data['is_free_email'] == 'Y') ? 'Yes' : (($data['is_free_email'] == 'N') ? 'No' : '-')) . '</span></td>
+				<td style="padding:5px;"><span><strong>Proxy IP Address</strong> <a href="javascript:;" title="Whether IP address is from Anonymous Proxy Server.">[?]</a></span></td>
 				<td style="padding:5px;"><span>' . (($data['is_proxy_ip_address'] == 'Y') ? 'Yes' : 'No') . '</span></td>
-				<td style="padding:5px;"><span><strong>BIN Found</strong> <a href="javascript:;" title="Whether the BIN information matches our BIN list.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . (($data['is_bin_found'] == 'Y') ? 'Yes' : (($data['is_bin_found'] == 'N') ? 'No' : '-')) . '</span></td>
 				<td style="padding:5px;"><span><strong>Triggered Rules</strong> <a href="javascript:;" title="FraudLabs Pro Rules triggered.">[?]</a></span></td>
 				<td style="padding:5px;"><span>' . (strpos($plan_name, 'Micro') ? '<span style="color:orange">Available for <a href="https://www.fraudlabspro.com/pricing" target="_blank">Mini plan</a> onward. Please <a href="https://www.fraudlabspro.com/merchant/login" target="_blank">upgrade</a>.</span>' : ((isset($data['fraudlabspro_rules'])) ? $data['fraudlabspro_rules'] : '-' )) . '</span></td>
 			</tr>
 			<tr>
-				<td style="padding:5px;"><span><strong>Email Blacklist</strong> <a href="javascript:;" title="Whether the email address is in our blacklist database.">[?]</a></span></td>
+				<td style="padding:5px;"><span><strong>IP in Blacklist</strong> <a href="javascript:;" title="Whether the IP address is in our blacklist database.">[?]</a></span></td>
+				<td style="padding:5px;"><span>' .  (($data['is_ip_blacklist'] == 'Y') ? 'Yes' : (($data['is_ip_blacklist'] == 'N') ? 'No' : '-')) . '</span></td>
+				<td style="padding:5px;"><span><strong>Email in Blacklist</strong> <a href="javascript:;" title="Whether the email address is in our blacklist database.">[?]</a></span></td>
 				<td style="padding:5px;"><span>' .  (($data['is_email_blacklist'] == 'Y') ? 'Yes' : (($data['is_email_blacklist'] == 'N') ? 'No' : '-')) . '</span></td>
-				<td style="padding:5px;"><span><strong>Credit Card Blacklist</strong> <a href="javascript:;" title="Whether the credit card is in our blacklist database.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' .  (($data['is_credit_card_blacklist'] == 'Y') ? 'Yes' : (($data['is_credit_card_blacklist'] == 'N') ? 'No' : '-')) . '</span></td>
-				<td style="padding:5px;"><span><strong>Phone Verified</strong> <a href="javascript:;" title="Whether the phone address is verified by the customer.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' .  (isset($data['is_phone_verified']) ? $data['is_phone_verified'] : 'NA') . '</span></td>
+				<td style="padding:5px;"><span><strong>Phone Verified</strong> <a href="javascript:;" title="Whether the phone number is verified by the customer.">[?]</a></span></td>
+				<td style="padding:5px;"><span>' .  (isset($data['is_phone_verified']) ? $data['is_phone_verified'] : 'NA [<a href="https://marketplace.magento.com/hexasoft-module-fraudlabsprosmsverification.html" target="_blank">FraudLabs Pro SMS Verification Extension Required</a>]') . '</span></td>
 			</tr>
 			<tr>
-				<td style="padding:5px;"><span><strong>Message</strong> <a href="javascript:;" title="FraudLabs Pro service message response.">[?]</a></span></td>
+				<td style="padding:5px;"><span><strong>Message</strong> <a href="javascript:;" title="FraudLabs Pro error message description.">[?]</a></span></td>
 				<td colspan="6" style="padding:5px;"><span>' . (($data['fraudlabspro_error_code']) ? $data['fraudlabspro_error_code'] . ': ' : '') . $data['fraudlabspro_message'] . '</span></td>
 			</tr>
 			<tr>
