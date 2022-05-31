@@ -195,6 +195,9 @@ class Observer implements ObserverInterface {
             'source' => 'magento',
             'source_version' => '2.2.6',
             'items' => $item_sku,
+            'coupon_code' => $order->getCouponCode() ? $order->getCouponCode() : '',
+            'coupon_amount' => $order->getCouponCode() ? -($order->getDiscountAmount()) : '',
+            'coupon_type' => '',
         );
 
         $shippingAddress = $order->getShippingAddress();
