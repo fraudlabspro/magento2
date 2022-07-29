@@ -193,7 +193,7 @@ class Observer implements ObserverInterface {
             'payment_mode' => $paymentMode,
             'flp_checksum' => ( isset( $_COOKIE['flp_checksum'] ) ) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.2.6',
+            'source_version' => '2.2.7',
             'items' => $item_sku,
             'coupon_code' => $order->getCouponCode() ? $order->getCouponCode() : '',
             'coupon_amount' => $order->getCouponCode() ? -($order->getDiscountAmount()) : '',

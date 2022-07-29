@@ -55,3 +55,6 @@ Revision History for FraudLabs Pro Magento2
 
 2.2.6 2022-05-10
         Updated fraud report display.
+
+2.2.7 2022-07-29
+        Added coupon code information for screen/order API.
