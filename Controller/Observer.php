@@ -73,8 +73,8 @@ class Observer implements ObserverInterface {
 
         $data = 0;
 
-        if(is_null($order->getfraudlabspro_response())) {
-            if($order->getfraudlabspro_response()){
+        if (is_null($order->getfraudlabspro_response())) {
+            if ($order->getfraudlabspro_response()) {
                 $data = $this->_unserialize($order->getfraudlabspro_response());
             }
         } else {
@@ -106,19 +106,19 @@ class Observer implements ObserverInterface {
         // get the data of all ips
         $ip_sucuri = $ip_incap = $ip_cf = $ip_real = $ip_forwarded = '::1';
         $ip_remoteadd = (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '::1');
-        if(isset($_SERVER['HTTP_X_SUCURI_CLIENTIP']) && filter_var($_SERVER['HTTP_X_SUCURI_CLIENTIP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
+        if (isset($_SERVER['HTTP_X_SUCURI_CLIENTIP']) && filter_var($_SERVER['HTTP_X_SUCURI_CLIENTIP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
             $ip_sucuri = $_SERVER['HTTP_X_SUCURI_CLIENTIP'];
         }
-        if(isset($_SERVER['HTTP_INCAP_CLIENT_IP']) && filter_var($_SERVER['HTTP_INCAP_CLIENT_IP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
+        if (isset($_SERVER['HTTP_INCAP_CLIENT_IP']) && filter_var($_SERVER['HTTP_INCAP_CLIENT_IP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
             $ip_incap = $_SERVER['HTTP_INCAP_CLIENT_IP'];
         }
-        if(isset($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
+        if (isset($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
             $ip_cf = $_SERVER['HTTP_CF_CONNECTING_IP'];
         }
-        if(isset($_SERVER['HTTP_X_REAL_IP']) && filter_var($_SERVER['HTTP_X_REAL_IP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
+        if (isset($_SERVER['HTTP_X_REAL_IP']) && filter_var($_SERVER['HTTP_X_REAL_IP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
             $ip_real = $_SERVER['HTTP_X_REAL_IP'];
         }
-        if(isset($_SERVER['HTTP_X_FORWARDED_FOR'])){
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             $xip = trim(current(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])));
 
             if (filter_var($xip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
@@ -126,16 +126,16 @@ class Observer implements ObserverInterface {
             }
         }
 
-        if($ip == '127.0.0.1' || $ip == '::1'){
-            if($ip_sucuri != '::1'){
+        if ($ip == '127.0.0.1' || $ip == '::1') {
+            if ($ip_sucuri != '::1') {
                 $ip = $ip_sucuri;
-            } elseif($ip_incap != '::1'){
+            } elseif ($ip_incap != '::1') {
                 $ip = $ip_incap;
-            } elseif($ip_cf != '::1'){
+            } elseif ($ip_cf != '::1') {
                 $ip = $ip_cf;
-            } elseif($ip_real != '::1'){
+            } elseif ($ip_real != '::1') {
                 $ip = $ip_real;
-            } elseif($ip_forwarded != '::1'){
+            } elseif ($ip_forwarded != '::1') {
                 $ip = $ip_forwarded;
             }
         }
@@ -154,13 +154,13 @@ class Observer implements ObserverInterface {
         $item_sku = rtrim($item_sku, ',');
 
         $payment_mode = $order->getPayment()->getMethod();
-        if($payment_mode === 'ccsave'){
+        if ($payment_mode === 'ccsave') {
             $paymentMode = 'creditcard';
-        }elseif($payment_mode === 'cashondelivery'){
+        } elseif ($payment_mode === 'cashondelivery') {
             $paymentMode = 'cod';
-        }elseif($payment_mode === 'paypal_standard' || $payment_mode === 'paypal_express'){
+        } elseif ($payment_mode === 'paypal_standard' || $payment_mode === 'paypal_express') {
             $paymentMode = 'paypal';
-        }else{
+        } else {
             $paymentMode = $payment_mode;
         }
 
@@ -190,10 +190,11 @@ class Observer implements ObserverInterface {
             'currency' => $this->_storeManager->getStore()->getCurrentCurrencyCode(),
             'user_order_id' => $orderId,
             'magento_order_id' => $order->getEntityId(),
+            'payment_gateway' => $order->getPayment()->getMethod(),
             'payment_mode' => $paymentMode,
-            'flp_checksum' => ( isset( $_COOKIE['flp_checksum'] ) ) ? $_COOKIE['flp_checksum'] : '',
+            'flp_checksum' => (isset($_COOKIE['flp_checksum'])) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.2.7',
+            'source_version' => '2.2.8',
             'items' => $item_sku,
             'coupon_code' => $order->getCouponCode() ? $order->getCouponCode() : '',
             'coupon_amount' => $order->getCouponCode() ? -($order->getDiscountAmount()) : '',
@@ -202,7 +203,7 @@ class Observer implements ObserverInterface {
 
         $shippingAddress = $order->getShippingAddress();
 
-        if($shippingAddress){
+        if ($shippingAddress) {
             $queries['ship_first_name'] = $shippingAddress->getFirstname();
             $queries['ship_last_name'] = $shippingAddress->getLastname();
             $queries['ship_addr'] = implode(" ", $shippingAddress->getStreet());
@@ -352,19 +353,19 @@ class Observer implements ObserverInterface {
             }
         }
 
-        if(((strpos($notificationOn, 'approve') !== FALSE) && $result['fraudlabspro_status'] == 'APPROVE') || ((strpos($notificationOn, 'review') !== FALSE) && $result['fraudlabspro_status'] == 'REVIEW') || ((strpos($notificationOn, 'reject') !== FALSE) && $result['fraudlabspro_status'] == 'REJECT')) {
+        if (((strpos($notificationOn, 'approve') !== FALSE) && $result['fraudlabspro_status'] == 'APPROVE') || ((strpos($notificationOn, 'review') !== FALSE) && $result['fraudlabspro_status'] == 'REVIEW') || ((strpos($notificationOn, 'reject') !== FALSE) && $result['fraudlabspro_status'] == 'REJECT')) {
             // Use zaptrigger API to get zap information
             $zapresponse = $this->http('https://api.fraudlabspro.com/v1/zaptrigger?' . http_build_query(array(
                 'key'        => $apiKey,
                 'format'    => 'json',
             )));
 
-            if(is_null($zapresponse) === FALSE) {
+            if (is_null($zapresponse) === FALSE) {
                 $zapresult = json_decode($zapresponse, true);
                 $target_url = $zapresult['target_url'];
             }
 
-            if(!empty($target_url)){
+            if (!empty($target_url)) {
                 $this->zaphttp($target_url, [
                     'id'            => $result['fraudlabspro_id'],
                     'date_created'    => gmdate('Y-m-d H:i:s'),
