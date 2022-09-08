@@ -1,63 +1,66 @@
 Revision History for FraudLabs Pro Magento2
-2.0.0 2016-06-15
-        First Release
+2.3.0 2022-09-02
+        Implemented new Agent JavaScript.
 
-2.0.4 2017-03-21
-        Fixed result display issue.
-
-2.0.5 2017-05-18
-        Added "Blacklist" button.
-
-2.0.6 2017-08-24
-        Fixed IP detection when Magento is running behind a reverse proxy server.
-
-2.0.7 2017-09-15
-        Added new fields for screen/order API.
-
-2.0.8 2017-10-20
-        Fixed device information capture issue.
-
-2.0.9 2017-10-20
-        Fixed name fields input for screen/order API.
-
-2.0.10 2017-10-25
-        Changed plugin configuration setting.
-
-2.0.11 2018-07-24
-        Fix compatibility issue.
-
-2.0.12 2019-02-21
-        Capture real IP behind firewalls and proxies.
-
-2.0.13 2019-05-24
-        Added is_phone_verified field.
-
-2.1.0 2019-10-09
-        Support notification based on fraud status using Zapier.
-
-2.2.0 2020-04-10
-        Support product SKU validation.
-
-2.2.1 2020-06-10
-        Added new result fields.
-
-2.2.2 2020-08-12
-        Added csp whitelist.
-
-2.2.3 2020-09-15
-        Fixed IP address parsing issue.
-
-2.2.4 2021-04-13
-        Updated Settings page to include Approve Status change.
-
-2.2.5 2021-08-04
-        Updated order feedback fields.
-
-2.2.6 2022-05-10
-        Updated fraud report display.
+2.2.8 2022-08-16
+        Added payment_gateway information for screen/order API.
 
 2.2.7 2022-07-29
         Added coupon code information for screen/order API.
 
-2.2.8 2022-08-16
-        Added payment_gateway information for screen/order API.
+2.2.6 2022-05-10
+        Updated fraud report display.
+
+2.2.5 2021-08-04
+        Updated order feedback fields.
+
+2.2.4 2021-04-13
+        Updated Settings page to include Approve Status change.
+
+2.2.3 2020-09-15
+        Fixed IP address parsing issue.
+
+2.2.2 2020-08-12
+        Added csp whitelist.
+
+2.2.1 2020-06-10
+        Added new result fields.
+
+2.2.0 2020-04-10
+        Support product SKU validation.
+
+2.1.0 2019-10-09
+        Support notification based on fraud status using Zapier.
+
+2.0.13 2019-05-24
+        Added is_phone_verified field.
+
+2.0.12 2019-02-21
+        Capture real IP behind firewalls and proxies.
+
+2.0.11 2018-07-24
+        Fix compatibility issue.
+
+2.0.10 2017-10-25
+        Changed plugin configuration setting.
+
+2.0.9 2017-10-20
+        Fixed name fields input for screen/order API.
+
+2.0.8 2017-10-20
+        Fixed device information capture issue.
+
+2.0.7 2017-09-15
+        Added new fields for screen/order API.
+
+2.0.6 2017-08-24
+        Fixed IP detection when Magento is running behind a reverse proxy server.
+
+2.0.5 2017-05-18
+        Added "Blacklist" button.
+
+2.0.4 2017-03-21
+        Fixed result display issue.
+
+2.0.0 2016-06-15
+        First Release
