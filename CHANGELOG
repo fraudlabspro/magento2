@@ -1,4 +1,7 @@
 Revision History for FraudLabs Pro Magento2
+2.3.1 2022-09-23
+        Fixed missing device information issue.
+
 2.3.0 2022-09-02
         Implemented new Agent JavaScript.
 
