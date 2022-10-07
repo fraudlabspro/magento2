@@ -147,7 +147,8 @@ class Observer implements ObserverInterface {
             if ($item->getParentItem()) continue;
             $product_sku = $item->getSku();
             if ($product_sku != '') {
-                $item_sku .= $product_sku . ':' . $item->getQtyOrdered() . ',';
+                $product_type = ($item->getProductType() == 'virtual') ? 'virtual' : (($item->getProductType() == 'downloadable') ? 'downloadable' :'physical');
+                $item_sku .= $product_sku . ':' . $item->getQtyOrdered() . ':' . $product_type . ',';
             }
             $qty += $item->getQtyOrdered();
         }
@@ -195,7 +196,7 @@ class Observer implements ObserverInterface {
             'device_fingerprint' => (isset($_COOKIE['flp_device'])) ? $_COOKIE['flp_device'] : '',
             'flp_checksum' => (isset($_COOKIE['flp_checksum'])) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.3.1',
+            'source_version' => '2.3.2',
             'items' => $item_sku,
             'coupon_code' => $order->getCouponCode() ? $order->getCouponCode() : '',
             'coupon_amount' => $order->getCouponCode() ? -($order->getDiscountAmount()) : '',
