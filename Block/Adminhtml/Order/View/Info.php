@@ -42,14 +42,16 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 			$apiKey = filter_input(INPUT_GET, 'apiKey');
 			$flpId = filter_input(INPUT_GET, 'flpId');
 
-			$this->_get('https://api.fraudlabspro.com/v1/order/feedback?' . http_build_query(array(
+			$queries= [
 				'format'		=> 'json',
 				'key'			=> $apiKey,
 				'action'		=> $action,
 				'id'			=> $flpId,
 				'source'		=> 'magento',
 				'triggered_by'	=> 'manual',
-			)));
+			];
+
+			$this->_post('https://api.fraudlabspro.com/v2/order/feedback', $queries);
 
 			$order->setfraudlabspro_response(json_encode($data))->save();
 
@@ -170,6 +172,8 @@ window.onload = function() {
 			$resultPlan = json_decode($responsePlan, true);
 			$plan_name = $resultPlan['plan_name'];
 		}
+		$flpErrCode = ($data['error']['error_code'] ?? '');
+		$flpErrMsg = ($data['error']['error_message'] ?? '');
 
 		if($data['fraudlabspro_score'] > 80){
 			$score = '<div style="color:#FF0000;font-size:4em;margin-top:20px;"><strong>'.$data['fraudlabspro_score'].'</strong></div>';
@@ -187,8 +191,11 @@ window.onload = function() {
 			$score = '<div style="color:#33CC00;font-size:3em;margin-top:20px;"><strong>'.$data['fraudlabspro_score'].'</strong></div>';
 		}
 
-		$countryName = $this->_objectManager->create('Magento\Directory\Model\Country')->load($data['ip_country'])->getName();
-		$location = array($countryName, $data['ip_region'], $data['ip_city']);
+		$countryCode = ($data['ip_geolocation']['country_code']) ?? $data['ip_country'];
+		$region = ($data['ip_geolocation']['region']) ?? $data['ip_region'];
+		$city = ($data['ip_geolocation']['city']) ?? $data['ip_city'];
+		$countryName = $this->_objectManager->create('Magento\Directory\Model\Country')->load($countryCode)->getName();
+		$location = array($countryName, $region, $city);
 		$location = array_unique($location);
 
 		switch($data['fraudlabspro_status']){
@@ -208,6 +215,27 @@ window.onload = function() {
 				$status = '-';
 		}
 
+		$usageType = ($data['ip_geolocation']['usage_type']) ?? $data['ip_usage_type'];
+		$usageType = is_array($usageType) ? implode(', ', $usageType) : $usageType;
+		$timezone = ($data['ip_geolocation']['timezone']) ?? $data['ip_timezone'];
+		$distanceKm = ($data['billing_address']['ip_distance_in_km']) ?? $data['distance_in_km'];
+		$distanceMile = ($data['billing_address']['ip_distance_in_mile']) ?? $data['distance_in_mile'];
+		$lat = ($data['ip_geolocation']['latitude']) ?? $data['ip_latitude'];
+		$lon = ($data['ip_geolocation']['longitude']) ?? $data['ip_longitude'];
+		$shipForward = ($data['shipping_address']['is_address_ship_forward']) ?? $data['is_address_ship_forward'];
+		$freeEmail = ($data['email_address']['is_free']) ?? $data['is_free_email'];
+		$proxyIP = ($data['ip_geolocation']['is_proxy']) ?? $data['is_proxy_ip_address'];
+		$blacklistIP = ($data['ip_geolocation']['is_in_blacklist']) ?? $data['is_ip_blacklist'];
+		$blacklistEmail = ($data['email_address']['is_in_blacklist']) ?? $data['is_email_blacklist'];
+		$flpRule = '-';
+		if (isset($data['fraudlabspro_rules'])) {
+			if (is_array($data['fraudlabspro_rules'])) {
+				$flpRule = implode(', ', $data['fraudlabspro_rules']);
+			} else {
+				$flpRule = $data['fraudlabspro_rules'];
+			}
+		}
+
 		$out .= '
 		<div class="entry-edit">
 			<div class="entry-edit-head" style="background:#cc0000; padding:5px;">
@@ -221,44 +249,44 @@ window.onload = function() {
 				<td style="width:120px; padding:5px;"><span><strong>IP Address</strong></span></td>
 				<td style="width:150px; padding:5px;"><span>' . $data['ip_address'] . '</span></td>
 				<td style="width:140px; padding:5px;"><span><strong>IP Usage Type</strong> <a href="javascript:;" title="Usage type of the IP address. E.g, ISP, Commercial, Residential.">[?]</a></span></td>
-				<td style="width:120px; padding:5px;"><span>' . ( ($data['ip_usage_type'] == 'NA' ) ? 'Not available [<a href="https://www.fraudlabspro.com/pricing" target="_blank">Upgrade</a>]' : $data['ip_usage_type'] ) . '</span></td>
+				<td style="width:120px; padding:5px;"><span>' . ( ($usageType == 'NA' ) ? 'Not available [<a href="https://www.fraudlabspro.com/pricing" target="_blank">Upgrade</a>]' : $usageType ) . '</span></td>
 				<td style="width:120px; padding:5px;"><span><strong>IP Time Zone</strong> <a href="javascript:;" title="Time zone of the IP address.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . $data['ip_timezone'] . '</span></td>
+				<td style="padding:5px;"><span>' . $timezone . '</span></td>
 			</tr>
 			<tr>
 				<td style="padding:5px;"><span><strong>IP Location</strong> <a href="javascript:;" title="Location of the IP address.">[?]</a></span></td>
 				<td colspan="3" style="padding:5px;"><span>' . implode(', ', $location) . ' <a href="http://www.geolocation.com/' . $data['ip_address'] . '" target="_blank">[Map]</a></span></td>
 				<td style="padding:5px;"><span><strong>IP to Billing Distance</strong> <a href="javascript:;" title="Distance from IP address to Billing Location.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . ( ( $data['distance_in_km'] ) ? ( $data['distance_in_km'] . ' KM / ' . $data['distance_in_mile'] . ' Miles' ) : '-' ) . ' </span></td>
+				<td style="padding:5px;"><span>' . ( ( $distanceKm ) ? ( $distanceKm . ' KM / ' . $distanceMile . ' Miles' ) : '-' ) . ' </span></td>
 			</tr>
 			<tr>
 				<td style="padding:5px;"><span><strong>IP Latitude</strong> <a href="javascript:;" title="Latitude of the IP address.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . $data['ip_latitude'] . '</span></td>
+				<td style="padding:5px;"><span>' . $lat . '</span></td>
 				<td style="padding:5px;"><span><strong>IP Longitude</strong> <a href="javascript:;" title="Longitude of the IP address.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . $data['ip_longitude'] . '</span></td>
+				<td style="padding:5px;"><span>' . $lon . '</span></td>
 				<td style="padding:5px;"><span><strong>Ship Forwarder</strong> <a href="javascript:;" title="Whether shipping address is a freight forwarder address.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . (($data['is_address_ship_forward'] == 'Y') ? 'Yes' : (($data['is_address_ship_forward'] == 'N') ? 'No' : '-')) . '</span></td>
+				<td style="padding:5px;"><span>' . (($shipForward) ? 'Yes' : 'No') . '</span></td>
 			</tr>
 			<tr>
 				<td rowspan="4" style="padding:5px; vertical-align:top; text-align:center;"><span><strong>FraudLabs Pro Status</strong> <a href="javascript:;" title="FraudLabs Pro status.">[?]</a><br>' . $status . '</span></td>
 				<td style="padding:5px;"><span><strong>Free Email Domain</strong> <a href="javascript:;" title="Whether e-mail is from free e-mail provider.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . (($data['is_free_email'] == 'Y') ? 'Yes' : (($data['is_free_email'] == 'N') ? 'No' : '-')) . '</span></td>
+				<td style="padding:5px;"><span>' . (($freeEmail) ? 'Yes' : 'No') . '</span></td>
 				<td style="padding:5px;"><span><strong>Proxy IP Address</strong> <a href="javascript:;" title="Whether IP address is from Anonymous Proxy Server.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . (($data['is_proxy_ip_address'] == 'Y') ? 'Yes' : 'No') . '</span></td>
+				<td style="padding:5px;"><span>' . (($proxyIP) ? 'Yes' : 'No') . '</span></td>
 				<td style="padding:5px;"><span><strong>Triggered Rules</strong> <a href="javascript:;" title="FraudLabs Pro Rules triggered.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . (strpos($plan_name, 'Micro') ? '<span style="color:orange">Available for <a href="https://www.fraudlabspro.com/pricing" target="_blank">Mini plan</a> onward. Please <a href="https://www.fraudlabspro.com/merchant/login" target="_blank">upgrade</a>.</span>' : ((isset($data['fraudlabspro_rules'])) ? $data['fraudlabspro_rules'] : '-' )) . '</span></td>
+				<td style="padding:5px;"><span>' . (strpos($plan_name, 'Micro') ? '<span style="color:orange">Available for <a href="https://www.fraudlabspro.com/pricing" target="_blank">Mini plan</a> onward. Please <a href="https://www.fraudlabspro.com/merchant/login" target="_blank">upgrade</a>.</span>' : $flpRule) . '</span></td>
 			</tr>
 			<tr>
 				<td style="padding:5px;"><span><strong>IP in Blacklist</strong> <a href="javascript:;" title="Whether the IP address is in our blacklist database.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' .  (($data['is_ip_blacklist'] == 'Y') ? 'Yes' : (($data['is_ip_blacklist'] == 'N') ? 'No' : '-')) . '</span></td>
+				<td style="padding:5px;"><span>' .  (($blacklistIP) ? 'Yes' : 'No') . '</span></td>
 				<td style="padding:5px;"><span><strong>Email in Blacklist</strong> <a href="javascript:;" title="Whether the email address is in our blacklist database.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' .  (($data['is_email_blacklist'] == 'Y') ? 'Yes' : (($data['is_email_blacklist'] == 'N') ? 'No' : '-')) . '</span></td>
+				<td style="padding:5px;"><span>' .  (($blacklistEmail) ? 'Yes' : 'No') . '</span></td>
 				<td style="padding:5px;"><span><strong>Phone Verified</strong> <a href="javascript:;" title="Whether the phone number is verified by the customer.">[?]</a></span></td>
 				<td style="padding:5px;"><span>' .  (isset($data['is_phone_verified']) ? $data['is_phone_verified'] : 'NA [<a href="https://marketplace.magento.com/hexasoft-module-fraudlabsprosmsverification.html" target="_blank">FraudLabs Pro SMS Verification Extension Required</a>]') . '</span></td>
 			</tr>
 			<tr>
 				<td style="padding:5px;"><span><strong>Message</strong> <a href="javascript:;" title="FraudLabs Pro error message description.">[?]</a></span></td>
-				<td colspan="6" style="padding:5px;"><span>' . (($data['fraudlabspro_error_code']) ? $data['fraudlabspro_error_code'] . ': ' : '') . $data['fraudlabspro_message'] . '</span></td>
+				<td colspan="6" style="padding:5px;"><span>' . (($flpErrCode) ? $flpErrCode . ': ' : '') . $flpErrMsg . '</span></td>
 			</tr>
 			<tr>
 				<td style="padding:5px;"><span><strong>Link</strong></span></td>
@@ -289,6 +317,32 @@ window.onload = function() {
 		</div>';
 
 		return $out;
+	}
+
+	private function _post($url, $fields = ''){
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_FAILONERROR, true);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+		curl_setopt($ch, CURLOPT_HTTP_VERSION, '1.1');
+		curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+
+		if (!empty($fields)) {
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, (is_array($fields)) ? http_build_query($fields) : $fields);
+		}
+
+		$response = curl_exec($ch);
+
+		if (!curl_errno($ch)) {
+			return $response;
+		}
+
+		return false;
 	}
 
 	private function _get($url){

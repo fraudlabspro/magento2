@@ -196,7 +196,7 @@ class Observer implements ObserverInterface {
             'device_fingerprint' => (isset($_COOKIE['flp_device'])) ? $_COOKIE['flp_device'] : '',
             'flp_checksum' => (isset($_COOKIE['flp_checksum'])) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.3.4',
+            'source_version' => '2.4.0',
             'items' => $item_sku,
             'coupon_code' => $order->getCouponCode() ? $order->getCouponCode() : '',
             'coupon_amount' => $order->getCouponCode() ? -($order->getDiscountAmount()) : '',
@@ -215,7 +215,7 @@ class Observer implements ObserverInterface {
             $queries['ship_country'] = $shippingAddress->getCountryId();
         }
 
-        $response = $this->http('https://api.fraudlabspro.com/v1/order/screen?' . http_build_query($queries));
+        $response = $this->post('https://api.fraudlabspro.com/v2/order/screen', $queries);
 
         if (is_null($response) === TRUE) {
             return false;
@@ -381,6 +381,32 @@ class Observer implements ObserverInterface {
 
         $this->messageManager->addSuccess(__('FraudLabs Pro Request sent.'));
         return true;
+    }
+
+    private function post($url, $fields = ''){
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, '1.1');
+        curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+
+        if (!empty($fields)) {
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, (is_array($fields)) ? http_build_query($fields) : $fields);
+        }
+
+        $response = curl_exec($ch);
+
+        if (!curl_errno($ch)) {
+            return $response;
+        }
+
+        return false;
     }
 
     private function http($url) {
