@@ -6,6 +6,9 @@
     <event name="sales_order_place_after">
         <observer name="sendRequestToFraudLabsProNonObserver" instance="Hexasoft\FraudLabsPro\Controller\Observer" />
     </event>
+    <event name="sales_order_save_after">
+        <observer name="sales_order_save_after" instance="Hexasoft\FraudLabsPro\Controller\OrderSaveAfter" />
+    </event>
 </config>
 
  

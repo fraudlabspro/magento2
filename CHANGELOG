@@ -1,5 +1,8 @@
 Revision History for FraudLabs Pro Magento2
 
+2.5.0 2024-07-10
+        Added Auto-Sync order status feature.
+
 2.4.0 2023-12-27
         Updated to FraudLabs Pro API v2.
 

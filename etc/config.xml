@@ -10,6 +10,7 @@
                 <api_key></api_key>
                 <review_status>holded</review_status>
                 <reject_status>canceled</reject_status>
+                <sync_magento_status>1</sync_magento_status>
             </basic_settings>
         </fraudlabspro>
     </default>

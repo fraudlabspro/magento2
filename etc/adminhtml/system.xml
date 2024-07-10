@@ -39,6 +39,10 @@
                     <source_model>Hexasoft\FraudLabsPro\Model\Adminhtml\System\Config\Source\View</source_model>
                     <comment><![CDATA[You can trigger notification, such as email sending, using Zapier service. Please configure the integration in Zapier.com before enabling the options. You can visit <a href="https://www.fraudlabspro.com/resources/tutorials/how-to-enable-notification-using-zapier-in-magento2/" target="_blank">https://www.fraudlabspro.com/resources/tutorials/how-to-enable-notification-using-zapier-in-magento2/</a> for details on how to enable the zap.]]></comment>
                 </field>
+                <field id="sync_magento_status" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sync Complete/Canceled Status</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
             </group>
         </section>
     </system>

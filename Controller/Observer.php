@@ -78,7 +78,7 @@ class Observer implements ObserverInterface {
                 $data = $this->_unserialize($order->getfraudlabspro_response());
             }
         } else {
-             $data = json_decode($order->getfraudlabspro_response(), true);
+            $data = json_decode($order->getfraudlabspro_response(), true);
         }
 
         if ($data)
@@ -196,7 +196,7 @@ class Observer implements ObserverInterface {
             'device_fingerprint' => (isset($_COOKIE['flp_device'])) ? $_COOKIE['flp_device'] : '',
             'flp_checksum' => (isset($_COOKIE['flp_checksum'])) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.4.0',
+            'source_version' => '2.5.0',
             'items' => $item_sku,
             'coupon_code' => $order->getCouponCode() ? $order->getCouponCode() : '',
             'coupon_amount' => $order->getCouponCode() ? -($order->getDiscountAmount()) : '',
@@ -215,7 +215,7 @@ class Observer implements ObserverInterface {
             $queries['ship_country'] = $shippingAddress->getCountryId();
         }
 
-        $response = $this->post('https://api.fraudlabspro.com/v2/order/screen', $queries);
+        $response = $this->_post('https://api.fraudlabspro.com/v2/order/screen', $queries);
 
         if (is_null($response) === TRUE) {
             return false;
@@ -357,7 +357,7 @@ class Observer implements ObserverInterface {
 
         if (((strpos($notificationOn, 'approve') !== FALSE) && $result['fraudlabspro_status'] == 'APPROVE') || ((strpos($notificationOn, 'review') !== FALSE) && $result['fraudlabspro_status'] == 'REVIEW') || ((strpos($notificationOn, 'reject') !== FALSE) && $result['fraudlabspro_status'] == 'REJECT')) {
             // Use zaptrigger API to get zap information
-            $zapresponse = $this->http('https://api.fraudlabspro.com/v1/zaptrigger?' . http_build_query(array(
+            $zapresponse = $this->_http('https://api.fraudlabspro.com/v1/zaptrigger?' . http_build_query(array(
                 'key'        => $apiKey,
                 'format'    => 'json',
             )));
@@ -368,7 +368,7 @@ class Observer implements ObserverInterface {
             }
 
             if (!empty($target_url)) {
-                $this->zaphttp($target_url, [
+                $this->_zaphttp($target_url, [
                     'id'            => $result['fraudlabspro_id'],
                     'date_created'    => gmdate('Y-m-d H:i:s'),
                     'flp_status'    => $result['fraudlabspro_status'],
@@ -383,7 +383,7 @@ class Observer implements ObserverInterface {
         return true;
     }
 
-    private function post($url, $fields = ''){
+    private function _post($url, $fields = ''){
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
@@ -409,7 +409,7 @@ class Observer implements ObserverInterface {
         return false;
     }
 
-    private function http($url) {
+    private function _http($url) {
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_FAILONERROR, 1);
@@ -430,7 +430,7 @@ class Observer implements ObserverInterface {
         return false;
     }
 
-    private function zaphttp($url, $fields = '') {
+    private function _zaphttp($url, $fields = '') {
         $ch = curl_init();
 
         if ($fields) {
