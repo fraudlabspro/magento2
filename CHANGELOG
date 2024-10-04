@@ -1,5 +1,8 @@
 Revision History for FraudLabs Pro Magento2
 
+2.6.0 2024-10-03
+        Supported Adobe Commerce (cloud).
+
 2.5.0 2024-07-10
         Added Auto-Sync order status feature.
 
