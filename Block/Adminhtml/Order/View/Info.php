@@ -191,9 +191,9 @@ window.onload = function() {
 			$score = '<div style="color:#33CC00;font-size:3em;margin-top:20px;"><strong>'.$data['fraudlabspro_score'].'</strong></div>';
 		}
 
-		$countryCode = ($data['ip_geolocation']['country_code']) ?? $data['ip_country'];
-		$region = ($data['ip_geolocation']['region']) ?? $data['ip_region'];
-		$city = ($data['ip_geolocation']['city']) ?? $data['ip_city'];
+		$countryCode = (($data['ip_geolocation']['country_code']) ?? ($data['ip_country'] ?? ''));
+		$region = (($data['ip_geolocation']['region']) ?? ($data['ip_region'] ?? ''));
+		$city = (($data['ip_geolocation']['city']) ?? ($data['ip_city'] ?? ''));
 		$countryName = $this->_objectManager->create('Magento\Directory\Model\Country')->load($countryCode)->getName();
 		$location = array($countryName, $region, $city);
 		$location = array_unique($location);
@@ -215,18 +215,18 @@ window.onload = function() {
 				$status = '-';
 		}
 
-		$usageType = ($data['ip_geolocation']['usage_type']) ?? $data['ip_usage_type'];
+		$usageType = (($data['ip_geolocation']['usage_type']) ?? ($data['ip_usage_type'] ?? ''));
 		$usageType = is_array($usageType) ? implode(', ', $usageType) : $usageType;
-		$timezone = ($data['ip_geolocation']['timezone']) ?? $data['ip_timezone'];
-		$distanceKm = ($data['billing_address']['ip_distance_in_km']) ?? $data['distance_in_km'];
-		$distanceMile = ($data['billing_address']['ip_distance_in_mile']) ?? $data['distance_in_mile'];
-		$lat = ($data['ip_geolocation']['latitude']) ?? $data['ip_latitude'];
-		$lon = ($data['ip_geolocation']['longitude']) ?? $data['ip_longitude'];
-		$shipForward = ($data['shipping_address']['is_address_ship_forward']) ?? $data['is_address_ship_forward'];
-		$freeEmail = ($data['email_address']['is_free']) ?? $data['is_free_email'];
-		$proxyIP = ($data['ip_geolocation']['is_proxy']) ?? $data['is_proxy_ip_address'];
-		$blacklistIP = ($data['ip_geolocation']['is_in_blacklist']) ?? $data['is_ip_blacklist'];
-		$blacklistEmail = ($data['email_address']['is_in_blacklist']) ?? $data['is_email_blacklist'];
+		$timezone = (($data['ip_geolocation']['timezone']) ?? ($data['ip_timezone'] ?? ''));
+		$distanceKm = (($data['billing_address']['ip_distance_in_km']) ?? ($data['distance_in_km'] ?? ''));
+		$distanceMile = (($data['billing_address']['ip_distance_in_mile']) ?? ($data['distance_in_mile'] ?? ''));
+		$lat = (($data['ip_geolocation']['latitude']) ?? ($data['ip_latitude'] ?? ''));
+		$lon = (($data['ip_geolocation']['longitude']) ?? ($data['ip_longitude'] ?? ''));
+		$shipForward = (($data['shipping_address']['is_address_ship_forward']) ?? ($data['is_address_ship_forward'] ?? ''));
+		$freeEmail = (($data['email_address']['is_free']) ?? ($data['is_free_email'] ?? ''));
+		$proxyIP = (($data['ip_geolocation']['is_proxy']) ?? ($data['is_proxy_ip_address'] ?? ''));
+		$blacklistIP = (($data['ip_geolocation']['is_in_blacklist']) ?? ($data['is_ip_blacklist'] ?? ''));
+		$blacklistEmail = (($data['email_address']['is_in_blacklist']) ?? ($data['is_email_blacklist'] ?? ''));
 		$flpRule = '-';
 		if (isset($data['fraudlabspro_rules'])) {
 			if (is_array($data['fraudlabspro_rules'])) {

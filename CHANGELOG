@@ -1,5 +1,8 @@
 Revision History for FraudLabs Pro Magento2
 
+2.6.1 2024-11-19
+        Fixed undefined array key warning.
+
 2.6.0 2024-10-03
         Supported Adobe Commerce (cloud).
 
