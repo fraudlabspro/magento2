@@ -43,6 +43,11 @@
                     <label>Sync Complete/Canceled Status</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="enable_debug_log" translate="label" type="select" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Debug Log</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Activate debug logging and save the log file in the magento/var/log/ directory.]]></comment>
+                </field>
             </group>
         </section>
     </system>

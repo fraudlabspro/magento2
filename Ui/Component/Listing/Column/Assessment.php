@@ -35,11 +35,11 @@ class Assessment extends Column {
                     if(is_null(json_decode($item[$this->getData('name')], true))){
                         if($item[$this->getData('name')]){
                             $data = $this->_unserialize($item[$this->getData('name')]);
-                            $item[$this->getData('name')] = $data['fraudlabspro_status'];
+                            $item[$this->getData('name')] = ($data['fraudlabspro_status'] ?? "");
                         }
                     } else {
                         $data = json_decode($item[$this->getData('name')], true);
-                        $item[$this->getData('name')] = $data['fraudlabspro_status'];
+                        $item[$this->getData('name')] = ($data['fraudlabspro_status'] ?? "");
                     }
                 } else {
                     $item[$this->getData('name')] = "";

@@ -68,8 +68,10 @@ class Observer implements ObserverInterface {
 
         $orderId = $order->getIncrementId();
 
-        if (empty($orderId))
+        if (empty($orderId)) {
+            $this->_writelog('Order ' . $orderId . ' is empty. Skip for FraudLabs Pro validation.');
             return true;
+        }
 
         $data = 0;
 
@@ -81,9 +83,12 @@ class Observer implements ObserverInterface {
             $data = json_decode($order->getfraudlabspro_response(), true);
         }
 
-        if ($data)
+        if ($data) {
+            $this->_writelog('Order ' . $orderId . ' has been validated. Skip for FraudLabs Pro validation.');
             return true;
+        }
 
+        $this->_writelog('FraudLabs Pro validation has started for Order ' . $orderId . '.');
         $apiKey = $this->scopeConfig->getValue('fraudlabspro/active_display/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $approveStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/approve_status', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $reviewStatus = $this->scopeConfig->getValue('fraudlabspro/active_display/review_status', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
@@ -196,7 +201,7 @@ class Observer implements ObserverInterface {
             'device_fingerprint' => (isset($_COOKIE['flp_device'])) ? $_COOKIE['flp_device'] : '',
             'flp_checksum' => (isset($_COOKIE['flp_checksum'])) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.6.1',
+            'source_version' => '2.7.0',
             'items' => $item_sku,
             'coupon_code' => $order->getCouponCode() ? $order->getCouponCode() : '',
             'coupon_amount' => $order->getCouponCode() ? -($order->getDiscountAmount()) : '',
@@ -228,6 +233,9 @@ class Observer implements ObserverInterface {
         $result['is_phone_verified'] = 'No';
 
         $order->setfraudlabspro_response(json_encode($result))->save();
+        $this->_writelog('FraudLabs Pro validation has been completed for Order ' . $orderId . '. Status: ' . $result['fraudlabspro_status'] . ', Transaction ID: ' . $result['fraudlabspro_id']);
+        $this->_writelog('The order state for Order ' . $orderId . ': ' . $order->getState());
+        $this->_writelog('The order status for Order ' . $orderId . ': ' . $order->getStatus());
 
         if ($result['fraudlabspro_status'] == 'APPROVE') {
             switch ($approveStatus) {
@@ -269,6 +277,8 @@ class Observer implements ObserverInterface {
                     $order->setStatus(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
                     break;
             }
+            $this->_writelog('The updated order state for APPROVE Order ' . $orderId . ': ' . $order->getState());
+            $this->_writelog('The updated order status for APPROVE Order ' . $orderId . ': ' . $order->getStatus());
         }
 
         if ($result['fraudlabspro_status'] == 'REVIEW') {
@@ -311,6 +321,8 @@ class Observer implements ObserverInterface {
                     $order->setStatus(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
                     break;
             }
+            $this->_writelog('The updated order state for REVIEW Order ' . $orderId . ': ' . $order->getState());
+            $this->_writelog('The updated order status for REVIEW Order ' . $orderId . ': ' . $order->getStatus());
         }
 
         if ($result['fraudlabspro_status'] == 'REJECT') {
@@ -341,6 +353,8 @@ class Observer implements ObserverInterface {
                     break;
 
                 case 'canceled':
+                    $order->setState(\Magento\Sales\Model\Order::STATE_NEW, true)->save();
+                    $order->setStatus('pending', true)->save();
                     if ($order->canCancel()) {
                         $order->cancel()->save();
                     }
@@ -353,6 +367,8 @@ class Observer implements ObserverInterface {
                     $order->setStatus(\Magento\Sales\Model\Order::STATE_HOLDED, true)->save();
                     break;
             }
+            $this->_writelog('The updated order state for REJECT Order ' . $orderId . ': ' . $order->getState());
+            $this->_writelog('The updated order status for REJECT Order ' . $orderId . ': ' . $order->getStatus());
         }
 
         if (((strpos($notificationOn, 'approve') !== FALSE) && $result['fraudlabspro_status'] == 'APPROVE') || ((strpos($notificationOn, 'review') !== FALSE) && $result['fraudlabspro_status'] == 'REVIEW') || ((strpos($notificationOn, 'reject') !== FALSE) && $result['fraudlabspro_status'] == 'REJECT')) {
@@ -369,12 +385,12 @@ class Observer implements ObserverInterface {
 
             if (!empty($target_url)) {
                 $this->_zaphttp($target_url, [
-                    'id'            => $result['fraudlabspro_id'],
-                    'date_created'    => gmdate('Y-m-d H:i:s'),
-                    'flp_status'    => $result['fraudlabspro_status'],
-                    'full_name'        => $order->getCustomerFirstname() . ' ' . $order->getCustomerLastname(),
-                    'email'            => $order->getCustomerEmail(),
-                    'order_id'        => $orderId,
+                    'id'           => $result['fraudlabspro_id'],
+                    'date_created' => gmdate('Y-m-d H:i:s'),
+                    'flp_status'   => $result['fraudlabspro_status'],
+                    'full_name'    => $order->getCustomerFirstname() . ' ' . $order->getCustomerLastname(),
+                    'email'        => $order->getCustomerEmail(),
+                    'order_id'     => $orderId,
                 ]);
             }
         }
@@ -479,6 +495,16 @@ class Observer implements ObserverInterface {
             $serializer = $objectManager->create(\Magento\Framework\Unserialize\Unserialize::class);
             return $serializer->unserialize($data);
         }
+    }
+
+    private function _writelog($message) {
+        if (!$this->scopeConfig->getValue('fraudlabspro/active_display/enable_debug_log', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
+            return;
+        }
+        $writer = new \Zend_Log_Writer_Stream(BP . '/var/log/FLP-custom.log');
+        $logger = new \Zend_Log();
+        $logger->addWriter($writer);
+        $logger->info($message);
     }
 
 }

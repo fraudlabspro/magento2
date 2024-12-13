@@ -157,7 +157,7 @@ window.onload = function() {
 			return '
 			<div class="entry-edit">
 				<div class="entry-edit-head" style="background:#cc0000;">
-					<h4 class="icon-head head-shipping-method"><a href="http://www.fraudlabspro.com" target="_blank"><img src="http://www.fraudlabspro.com/images/logo-small.png" width="163" height="20" border="0" align="absMiddle" /></a></h4>
+					<h4 class="icon-head head-shipping-method"><a href="https://www.fraudlabspro.com" target="_blank"><img src="https://www.fraudlabspro.com/images/logo-small.png" width="163" height="20" border="0" align="absMiddle" /></a></h4>
 				</div>
 
 				<fieldset>
@@ -239,7 +239,7 @@ window.onload = function() {
 		$out .= '
 		<div class="entry-edit">
 			<div class="entry-edit-head" style="background:#cc0000; padding:5px;">
-				<h4 class="icon-head head-shipping-method"><a href="http://www.fraudlabspro.com" target="_blank"><img src="http://www.fraudlabspro.com/images/logo-small.png" width="163" height="20" border="0" align="absMiddle" /></a></h4>
+				<h4 class="icon-head head-shipping-method"><a href="https://www.fraudlabspro.com" target="_blank"><img src="https://www.fraudlabspro.com/images/logo-small.png" width="163" height="20" border="0" align="absMiddle" /></a></h4>
 			</div>
 
 			<fieldset>
@@ -255,7 +255,7 @@ window.onload = function() {
 			</tr>
 			<tr>
 				<td style="padding:5px;"><span><strong>IP Location</strong> <a href="javascript:;" title="Location of the IP address.">[?]</a></span></td>
-				<td colspan="3" style="padding:5px;"><span>' . implode(', ', $location) . ' <a href="http://www.geolocation.com/' . $data['ip_address'] . '" target="_blank">[Map]</a></span></td>
+				<td colspan="3" style="padding:5px;"><span>' . implode(', ', $location) . ' <a href="https://www.geolocation.com/' . $data['ip_address'] . '" target="_blank">[Map]</a></span></td>
 				<td style="padding:5px;"><span><strong>IP to Billing Distance</strong> <a href="javascript:;" title="Distance from IP address to Billing Location.">[?]</a></span></td>
 				<td style="padding:5px;"><span>' . ( ( $distanceKm ) ? ( $distanceKm . ' KM / ' . $distanceMile . ' Miles' ) : '-' ) . ' </span></td>
 			</tr>

@@ -1,5 +1,8 @@
 Revision History for FraudLabs Pro Magento2
 
+2.7.0 2024-12-04
+        Added Enable Debug Log feature.
+
 2.6.1 2024-11-19
         Fixed undefined array key warning.
 
