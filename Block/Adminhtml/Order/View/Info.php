@@ -173,7 +173,7 @@ window.onload = function() {
 			$plan_name = $resultPlan['plan_name'];
 		}
 		$flpErrCode = ($data['error']['error_code'] ?? '');
-		$flpErrMsg = ($data['error']['error_message'] ?? '');
+		$flpErrMsg = ($data['error']['error_message'] ?? '-');
 
 		if($data['fraudlabspro_score'] > 80){
 			$score = '<div style="color:#FF0000;font-size:4em;margin-top:20px;"><strong>'.$data['fraudlabspro_score'].'</strong></div>';
@@ -215,7 +215,7 @@ window.onload = function() {
 				$status = '-';
 		}
 
-		$usageType = (($data['ip_geolocation']['usage_type']) ?? ($data['ip_usage_type'] ?? ''));
+		$usageType = (($data['ip_geolocation']['usage_type']) ?? ($data['ip_usage_type'] ?? 'NA'));
 		$usageType = is_array($usageType) ? implode(', ', $usageType) : $usageType;
 		$timezone = (($data['ip_geolocation']['timezone']) ?? ($data['ip_timezone'] ?? ''));
 		$distanceKm = (($data['billing_address']['ip_distance_in_km']) ?? ($data['distance_in_km'] ?? ''));
@@ -235,86 +235,165 @@ window.onload = function() {
 				$flpRule = $data['fraudlabspro_rules'];
 			}
 		}
-
-		$out .= '
-		<div class="entry-edit">
-			<div class="entry-edit-head" style="background:#cc0000; padding:5px;">
-				<h4 class="icon-head head-shipping-method"><a href="https://www.fraudlabspro.com" target="_blank"><img src="https://www.fraudlabspro.com/images/logo-small.png" width="163" height="20" border="0" align="absMiddle" /></a></h4>
-			</div>
-
-			<fieldset>
-			<table width="100%" border="1" bordercolor="#c0c0c0" style="border-collapse:collapse;">
-			<tr>
-				<td rowspan="3" style="width:90px; text-align:center; vertical-align:top; padding:5px;"><strong>FraudLabs Pro Score</strong> <a href="javascript:;" title="Risk score, 0 (low risk) - 100 (high risk).">[?]</a><br/>' . $score . '</td>
-				<td style="width:120px; padding:5px;"><span><strong>IP Address</strong></span></td>
-				<td style="width:150px; padding:5px;"><span>' . $data['ip_address'] . '</span></td>
-				<td style="width:140px; padding:5px;"><span><strong>IP Usage Type</strong> <a href="javascript:;" title="Usage type of the IP address. E.g, ISP, Commercial, Residential.">[?]</a></span></td>
-				<td style="width:120px; padding:5px;"><span>' . ( ($usageType == 'NA' ) ? 'Not available [<a href="https://www.fraudlabspro.com/pricing" target="_blank">Upgrade</a>]' : $usageType ) . '</span></td>
-				<td style="width:120px; padding:5px;"><span><strong>IP Time Zone</strong> <a href="javascript:;" title="Time zone of the IP address.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . $timezone . '</span></td>
-			</tr>
-			<tr>
-				<td style="padding:5px;"><span><strong>IP Location</strong> <a href="javascript:;" title="Location of the IP address.">[?]</a></span></td>
-				<td colspan="3" style="padding:5px;"><span>' . implode(', ', $location) . ' <a href="https://www.geolocation.com/' . $data['ip_address'] . '" target="_blank">[Map]</a></span></td>
-				<td style="padding:5px;"><span><strong>IP to Billing Distance</strong> <a href="javascript:;" title="Distance from IP address to Billing Location.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . ( ( $distanceKm ) ? ( $distanceKm . ' KM / ' . $distanceMile . ' Miles' ) : '-' ) . ' </span></td>
-			</tr>
-			<tr>
-				<td style="padding:5px;"><span><strong>IP Latitude</strong> <a href="javascript:;" title="Latitude of the IP address.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . $lat . '</span></td>
-				<td style="padding:5px;"><span><strong>IP Longitude</strong> <a href="javascript:;" title="Longitude of the IP address.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . $lon . '</span></td>
-				<td style="padding:5px;"><span><strong>Ship Forwarder</strong> <a href="javascript:;" title="Whether shipping address is a freight forwarder address.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . (($shipForward) ? 'Yes' : 'No') . '</span></td>
-			</tr>
-			<tr>
-				<td rowspan="4" style="padding:5px; vertical-align:top; text-align:center;"><span><strong>FraudLabs Pro Status</strong> <a href="javascript:;" title="FraudLabs Pro status.">[?]</a><br>' . $status . '</span></td>
-				<td style="padding:5px;"><span><strong>Free Email Domain</strong> <a href="javascript:;" title="Whether e-mail is from free e-mail provider.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . (($freeEmail) ? 'Yes' : 'No') . '</span></td>
-				<td style="padding:5px;"><span><strong>Proxy IP Address</strong> <a href="javascript:;" title="Whether IP address is from Anonymous Proxy Server.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . (($proxyIP) ? 'Yes' : 'No') . '</span></td>
-				<td style="padding:5px;"><span><strong>Triggered Rules</strong> <a href="javascript:;" title="FraudLabs Pro Rules triggered.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' . (strpos($plan_name, 'Micro') ? '<span style="color:orange">Available for <a href="https://www.fraudlabspro.com/pricing" target="_blank">Mini plan</a> onward. Please <a href="https://www.fraudlabspro.com/merchant/login" target="_blank">upgrade</a>.</span>' : $flpRule) . '</span></td>
-			</tr>
-			<tr>
-				<td style="padding:5px;"><span><strong>IP in Blacklist</strong> <a href="javascript:;" title="Whether the IP address is in our blacklist database.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' .  (($blacklistIP) ? 'Yes' : 'No') . '</span></td>
-				<td style="padding:5px;"><span><strong>Email in Blacklist</strong> <a href="javascript:;" title="Whether the email address is in our blacklist database.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' .  (($blacklistEmail) ? 'Yes' : 'No') . '</span></td>
-				<td style="padding:5px;"><span><strong>Phone Verified</strong> <a href="javascript:;" title="Whether the phone number is verified by the customer.">[?]</a></span></td>
-				<td style="padding:5px;"><span>' .  (isset($data['is_phone_verified']) ? $data['is_phone_verified'] : 'NA [<a href="https://marketplace.magento.com/hexasoft-module-fraudlabsprosmsverification.html" target="_blank">FraudLabs Pro SMS Verification Extension Required</a>]') . '</span></td>
-			</tr>
-			<tr>
-				<td style="padding:5px;"><span><strong>Message</strong> <a href="javascript:;" title="FraudLabs Pro error message description.">[?]</a></span></td>
-				<td colspan="6" style="padding:5px;"><span>' . (($flpErrCode) ? $flpErrCode . ': ' : '') . $flpErrMsg . '</span></td>
-			</tr>
-			<tr>
-				<td style="padding:5px;"><span><strong>Link</strong></span></td>
-				<td colspan="6" style="padding:5px;"><span><a href="https://www.fraudlabspro.com/merchant/transaction-details/' . $data['fraudlabspro_id'] . '" target="_blank">https://www.fraudlabspro.com/merchant/transaction-details/' . $data['fraudlabspro_id'] . '</a></span></td>
-			</tr>';
-
-		if($data['fraudlabspro_status'] == 'REVIEW'){
-			$out .= '
-			<tr>
-				<td colspan="7">
-					<form id="review-action">
-						<input type="hidden" name="apiKey" value="' . $data['api_key'] . '" />
-						<input type="hidden" name="flpId" value="' . $data['fraudlabspro_id'] . '" />
-
-						<div style="text-align:center;padding:10px">
-							<input type="submit" name="approve" value="Approve Order" />
-							<input type="submit" name="reject" value="Reject Order" />
-							<input type="submit" name="reject-blacklist" value="Blacklist Order" />
-						</div>
-					</form>
-				</td>
-			</tr>';
+		if ($flpRule == "") {
+			$flpRule = '-';
 		}
 
 		$out .= '
+			<div style="padding:10px 20px;border: 0.75px solid #cccccc;border-radius: 5px;box-shadow: 0.125rem .25rem rgba(0, 0, 0, .075) !important;margin-bottom:40px;">
+				<h1 style="font-size:20px;">FraudLabs Pro Fraud Validation Result</h1>
+				<p style="font-size:17px;color:#181f2d;font-weight:600;margin-top:20px;">General</p>
+				<div style="margin-bottom:15px;text-align:center;">
+					<img style="margin-top:10px;margin-bottom:0;" src="https://cdn.fraudlabspro.com/assets/img/scores/score-' . $data['fraudlabspro_score'] . '.png" width="260" height="113" alt="77">
+				</div>
+				<table width="100%" style="border-collapse:collapse;text-align:left;">
+					<tr style="margin-bottom:10px;vertical-align:top;">
+						<td width="19.5%">&nbsp;</td>
+						<td>
+							<p style="color:#87888d;margin-bottom:0;margin-top:0;">FraudLabs Pro Score
+								<a href="javascript:;" style="vertical-align:middle;" title="Risk score, 0 (low risk) - 100 (high risk)."> 
+									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="#87888d" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/></svg>
+								</a>
+							</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;font-weight:600;font-size:25px;">' . $data['fraudlabspro_score'] . '</p>
+						</td>
+						<td>
+							<p style="color:#87888d;margin-bottom:0;margin-top:0;">FraudLabs Pro Status
+								<a href="javascript:;" style="vertical-align:middle;" title="FraudLabs Pro status which is either Approve, Review or Reject."> 
+									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="#87888d" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/></svg>
+								</a>
+							</p>
+							<p style="color:#FFCC00;margin-top:4px; margin-bottom:5px;font-weight:600;font-size:25px;">' . $status . '</p>
+						</td>
+						<td>&nbsp;</td>
+					</tr>
 				</table>
-			</fieldset>
-		</div>';
+
+				<p style="font-size:17px;color:#181f2d;font-weight:600;margin-top:40px;">IP Geolocation</p>
+				<div style="overflow-x:auto;">
+				<table width="100%"  style="border-collapse:collapse;text-align:left;">
+					<tr style="margin-bottom:10px;vertical-align:top;">
+						<td width="20%">
+							<p style="color:#87888d;margin-bottom:0;margin-top:0;">IP Address</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;">' . $data['ip_address'] . '</p>
+						</td>
+						<td width="20%">
+							<p style="color:#87888d;margin-bottom:0;margin-top:0;">Coordinates</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;">' . $lat . ', ' . $lon . '</p>
+						</td>
+						<td colspan="2" width="50%">
+							<p style="color:#87888d;margin-bottom:0;margin-top:0;">IP Location</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;"><a href="https://www.geolocation.com/' . $data['ip_address'] . '" target="_blank">' . implode(', ', $location) . '</a></p>
+						</td>
+					</tr>
+					<tr style="vertical-align:top;">
+						<td width="20%">
+							<p style="color:#87888d;margin-bottom:0;">Time Zone</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">' . $timezone . '</p>
+						</td>
+						<td width="20%">
+							<p style="color:#87888d;margin-bottom:0;">Usage Type
+								<a href="/" style="vertical-align:middle;" title="Usage type of the IP address. E.g, ISP, Commercial, Residential.">
+									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="#87888d" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/></svg>
+								</a>
+							</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">
+								' . ( ($usageType == 'NA' ) ? '<a href="https://www.fraudlabspro.com/pricing" target="_blank">Upgrade to View »</a>' : $usageType ) . '
+							</p>
+						</td>
+						<td width="20%">
+							<p style="color:#87888d;margin-bottom:0;">Ship Forwarder
+								<a href="javascript:;" style="vertical-align:middle;" title="Whether shipping address is a freight forwarder address.">
+									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="#87888d" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/></svg>
+								</a>
+							</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">' . (($shipForward) ? 'Yes' : 'No') . '</p>
+						</td>
+						<td>
+							<p style="color:#87888d;margin-bottom:0;">IP to Billing Distance</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">' . ( ( $distanceKm ) ? ( $distanceKm . ' KM / ' . $distanceMile . ' Miles' ) : '-' ) . '</p>
+						</td>
+					</tr>
+				</table>
+				</div>
+
+				<p style="font-size:17px;color:#181f2d;font-weight:600;margin-top:45px;">Validation Information</p>
+				<div style="overflow-x:auto;">
+				<table width="100%"  style="border-collapse:collapse;text-align:left">
+					<tr style="margin-bottom:10px;vertical-align:top;">
+						<td width="20%">
+							<p style="color:#87888d;margin-bottom:0;margin-top:0;">Free Email Domain</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;">' . (($freeEmail) ? 'Yes' : 'No') . '</p>
+						</td>
+						<td width="20%">
+							<p style="color:#87888d;margin-bottom:0;margin-top:0;">Proxy IP
+								<a href="javascript:;" style="vertical-align:middle;" title="Whether IP address is from Anonymous Proxy Server."> 
+									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="#87888d" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/></svg>
+								</a>
+							</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;">' . (($proxyIP) ? 'Yes' : 'No') . '</p>
+						</td>
+						
+						<td colspan="2" width="50%">
+							<p style="color:#87888d;margin-bottom:0;margin-top:0;">Phone Verified</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;">
+								' .  (isset($data['is_phone_verified']) ? $data['is_phone_verified'] : '<a href="https://marketplace.magento.com/hexasoft-module-fraudlabsprosmsverification.html" target="_blank">SMS Verification Extension Required</a>') . '
+							</p>
+						</td>
+					</tr>
+					<tr style="margin-bottom:10px;vertical-align:top;">
+						<td>
+							<p style="color:#87888d;margin-bottom:0;">IP in Blacklist</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">' .  (($blacklistIP) ? 'Yes' : 'No') . '</p>
+						</td>
+						<td>
+							<p style="color:#87888d;margin-bottom:0;">Email in Blacklist</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">' .  (($blacklistEmail) ? 'Yes' : 'No') . '</p>
+						</td>
+						<td colspan="2">
+							<p style="color:#87888d;margin-bottom:0;">Rules Triggered
+								<a href="javascript:;" style="vertical-align:middle;" title="FraudLabs Pro Rules triggered."> 
+									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="#87888d" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/></svg>
+								</a>
+							</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">
+								' . (strpos($plan_name, 'Micro') ? '<a href="https://www.fraudlabspro.com/pricing" target="_blank">Upgrade to View »</a>' : $flpRule) . '
+							</p>
+						</td>
+					</tr>
+					<tr style="vertical-align:top;">
+						<td colspan="4">
+							<p style="color:#87888d;margin-bottom:0;">Error Message
+								<a href="javascript:;" style="vertical-align:middle;" title="FraudLabs Pro error message description."> 
+									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="#87888d" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/></svg>
+								</a>
+							</p>
+							<p style="color:;margin-top:4px; margin-bottom:20px;">' . (($flpErrCode) ? $flpErrCode . ': ' : '') . $flpErrMsg . '</p>
+						</td>
+					</tr>
+					<tr style="vertical-align:top;">
+						<td colspan="4">
+							<p style="color:;margin-top:6px; margin-bottom:20px;">For full report, please visit <a href="https://www.fraudlabspro.com/merchant/transaction-details/' . $data['fraudlabspro_id'] . '" target="_blank">https://www.fraudlabspro.com/merchant/transaction-details/' . $data['fraudlabspro_id'] . '</a></p>
+						</td>
+					</tr>
+				</table>
+				</div>';
+
+		if($data['fraudlabspro_status'] == 'REVIEW'){
+			$out .= '
+				<div style="text-align: center;margin-top:15px;margin-bottom:15px;">
+					<form id="review-action">
+						<input type="hidden" name="apiKey" value="' . $data['api_key'] . '" />
+						<input type="hidden" name="flpId" value="' . $data['fraudlabspro_id'] . '" />
+						<a href="javascript:;" style="width:92px; display: inline-block; color: #55595c;text-align: center;vertical-align: middle; padding:8px 20px;font-size: 15px;line-height: 1.3rem;background-color:#0fb753;color:#ffffff;text-decoration:none;border-radius:4px;margin-bottom:10px;" name="approve">Approve</a>&nbsp;
+						<a href="javascript:;" style="width:92px; display: inline-block; color: #55595c;text-align: center;vertical-align: middle; padding:8px 20px;font-size: 15px;line-height: 1.3rem;background-color:#f1445a;color:#ffffff;text-decoration:none;border-radius:4px;margin-bottom:10px;" name="reject">Reject</a>&nbsp;
+						<a href="javascript:;" style="width:92px; display: inline-block; color: #55595c;text-align: center;vertical-align: middle; padding:8px 20px;font-size: 15px;line-height: 1.3rem;background-color:#3c4349;color:#ffffff;text-decoration:none;border-radius:4px;margin-bottom:10px;" name="reject-blacklist">Blacklist</a>
+					</form>
+				</div>';
+		}
+
+		$out .= '
+			</div>';
 
 		return $out;
 	}
