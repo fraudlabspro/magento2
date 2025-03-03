@@ -201,7 +201,7 @@ class Observer implements ObserverInterface {
             'device_fingerprint' => (isset($_COOKIE['flp_device'])) ? $_COOKIE['flp_device'] : '',
             'flp_checksum' => (isset($_COOKIE['flp_checksum'])) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.7.1',
+            'source_version' => '2.7.3',
             'items' => $item_sku,
             'coupon_code' => $order->getCouponCode() ? $order->getCouponCode() : '',
             'coupon_amount' => $order->getCouponCode() ? -($order->getDiscountAmount()) : '',
@@ -373,7 +373,7 @@ class Observer implements ObserverInterface {
 
         if (((strpos($notificationOn, 'approve') !== FALSE) && $result['fraudlabspro_status'] == 'APPROVE') || ((strpos($notificationOn, 'review') !== FALSE) && $result['fraudlabspro_status'] == 'REVIEW') || ((strpos($notificationOn, 'reject') !== FALSE) && $result['fraudlabspro_status'] == 'REJECT')) {
             // Use zaptrigger API to get zap information
-            $zapresponse = $this->_http('https://api.fraudlabspro.com/v1/zaptrigger?' . http_build_query(array(
+            $zapresponse = $this->_http('https://api.fraudlabspro.com/v2/zaptrigger?' . http_build_query(array(
                 'key'        => $apiKey,
                 'format'    => 'json',
             )));

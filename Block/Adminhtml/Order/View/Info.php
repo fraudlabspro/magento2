@@ -168,7 +168,7 @@ window.onload = function() {
 		$plan_name = '';
 		$apiKeyPlan = $this->scopeConfig->getValue('fraudlabspro/active_display/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 		if($apiKeyPlan !== ''){
-			$responsePlan = $this->_get('https://api.fraudlabspro.com/v1/plan?key=' . rawurlencode($apiKeyPlan) . '&format=json');
+			$responsePlan = $this->_get('https://api.fraudlabspro.com/v2/plan/result?key=' . rawurlencode($apiKeyPlan) . '&format=json');
 			$resultPlan = json_decode($responsePlan, true);
 			$plan_name = $resultPlan['plan_name'];
 		}
