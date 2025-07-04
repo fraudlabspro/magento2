@@ -13,6 +13,7 @@ class FlpsummaryTab extends \Magento\Sales\Controller\Adminhtml\Order
 
     // used for LayoutFactory
     protected $layout_factorys;
+    private $layoutFactorys;
 
     // construct function
     public function __construct(

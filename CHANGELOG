@@ -1,5 +1,8 @@
 Revision History for FraudLabs Pro Magento2
 
+2.7.4 2025-07-04
+        Fixed Creation of dynamic property deprecated functionality error.
+
 2.7.3 2025-02-27
         Updated all FraudLabs Pro API to v2.
 

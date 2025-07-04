@@ -201,7 +201,7 @@ class Observer implements ObserverInterface {
             'device_fingerprint' => (isset($_COOKIE['flp_device'])) ? $_COOKIE['flp_device'] : '',
             'flp_checksum' => (isset($_COOKIE['flp_checksum'])) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.7.3',
+            'source_version' => '2.7.4',
             'items' => $item_sku,
             'coupon_code' => $order->getCouponCode() ? $order->getCouponCode() : '',
             'coupon_amount' => $order->getCouponCode() ? -($order->getDiscountAmount()) : '',
