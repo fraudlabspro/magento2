@@ -1,17 +1,21 @@
 <?php
 namespace Hexasoft\FraudLabsPro\Block\Adminhtml\Order\View;
 
+use Magento\Framework\Escaper;
+
 class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 	protected $registry;
 	protected $_order;
 	protected $scopeConfig;
 	protected $_objectManager;
+	protected $escaper;
 
-	public function __construct(\Magento\Framework\Registry $registry, \Magento\Framework\ObjectManagerInterface $objectManager, \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig){
+	public function __construct(\Magento\Framework\Registry $registry, \Magento\Framework\ObjectManagerInterface $objectManager, \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig, Escaper $escaper){
 		$this->registry = $registry;
 		$this->_objectManager = $objectManager;
 		$this->scopeConfig = $scopeConfig;
 		$this->_order = $this->registry->registry('current_order');
+		$this->escaper = $escaper;
 	}
 
 	protected function _getCollectionClass(){
@@ -27,20 +31,16 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 		$out = '';
 
 		if(!empty($order)){
-			if(is_null($order->getfraudlabspro_response())){
-				if($order->getfraudlabspro_response()){
-					$data = $this->_unserialize($order->getfraudlabspro_response());
-				}
-			} else {
-				$data = json_decode($order->getfraudlabspro_response(), true);
-			}
+			$data = json_decode($order->getfraudlabspro_response(), true);
 		}
 
-		if(filter_input(INPUT_GET, 'approve') || filter_input(INPUT_GET, 'reject') || filter_input(INPUT_GET, 'reject-blacklist')){
-			$data['fraudlabspro_status'] = (filter_input(INPUT_GET, 'approve')) ? 'APPROVE' : 'REJECT';
-			$action = (filter_input(INPUT_GET, 'approve')) ? 'APPROVE' : ((filter_input(INPUT_GET, 'reject')) ? 'REJECT' : 'REJECT_BLACKLIST');
-			$apiKey = filter_input(INPUT_GET, 'apiKey');
-			$flpId = filter_input(INPUT_GET, 'flpId');
+		if(filter_input(INPUT_GET, 'flp-approve') || filter_input(INPUT_GET, 'flp-reject') || filter_input(INPUT_GET, 'flp-reject-blacklist')){
+			$data['fraudlabspro_status'] = (filter_input(INPUT_GET, 'flp-approve')) ? 'APPROVE' : 'REJECT';
+			$action = (filter_input(INPUT_GET, 'flp-approve')) ? 'APPROVE' : ((filter_input(INPUT_GET, 'flp-reject')) ? 'REJECT' : 'REJECT_BLACKLIST');
+			$apiKey_raw = filter_input(INPUT_GET, 'apiKey');
+			$apiKey = preg_replace('/[^a-zA-Z0-9]/', '', $apiKey_raw);
+			$flpId_raw = filter_input(INPUT_GET, 'flpId');
+			$flpId = preg_replace('/[^a-zA-Z0-9-]/', '', $flpId_raw);
 
 			$queries= [
 				'format'		=> 'json',
@@ -55,7 +55,7 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\View\Info {
 
 			$order->setfraudlabspro_response(json_encode($data))->save();
 
-			if(filter_input(INPUT_GET, 'approve')){
+			if(filter_input(INPUT_GET, 'flp-approve')){
 				switch ($approveStatus) {
 					case 'pending':
 						$order->setState(\Magento\Sales\Model\Order::STATE_NEW, true)->save();
@@ -103,7 +103,7 @@ window.onload = function() {
 	}
 }</script>";
 			}
-			elseif(filter_input(INPUT_GET, 'reject') || filter_input(INPUT_GET, 'reject-blacklist')){
+			elseif(filter_input(INPUT_GET, 'flp-reject') || filter_input(INPUT_GET, 'flp-reject-blacklist')){
 				switch ($rejectStatus) {
 					case 'pending':
 						$order->setState(\Magento\Sales\Model\Order::STATE_NEW, true)->save();
@@ -176,19 +176,19 @@ window.onload = function() {
 		$flpErrMsg = ($data['error']['error_message'] ?? '-');
 
 		if($data['fraudlabspro_score'] > 80){
-			$score = '<div style="color:#FF0000;font-size:4em;margin-top:20px;"><strong>'.$data['fraudlabspro_score'].'</strong></div>';
+			$score = '<div style="color:#FF0000;font-size:4em;margin-top:20px;"><strong>'. $this->escaper->escapeHtml($data['fraudlabspro_score']) .'</strong></div>';
 		}
 		elseif($data['fraudlabspro_score'] > 60){
-			$score = '<div style="color:#FFCC00;font-size:4em;margin-top:20px;"><strong>'.$data['fraudlabspro_score'].'</strong></div>';
+			$score = '<div style="color:#FFCC00;font-size:4em;margin-top:20px;"><strong>'. $this->escaper->escapeHtml($data['fraudlabspro_score']) .'</strong></div>';
 		}
 		elseif($data['fraudlabspro_score'] > 40){
-			$score = '<div style="color:#ffc166;font-size:4em;margin-top:20px;"><strong>'.$data['fraudlabspro_score'].'</strong></div>';
+			$score = '<div style="color:#ffc166;font-size:4em;margin-top:20px;"><strong>'. $this->escaper->escapeHtml($data['fraudlabspro_score']) .'</strong></div>';
 		}
 		elseif($data['fraudlabspro_score'] > 20){
-			$score = '<div style="color:#66CC66;font-size:4em;margin-top:20px;"><strong>'.$data['fraudlabspro_score'].'</strong></div>';
+			$score = '<div style="color:#66CC66;font-size:4em;margin-top:20px;"><strong>'. $this->escaper->escapeHtml($data['fraudlabspro_score']) .'</strong></div>';
 		}
 		else{
-			$score = '<div style="color:#33CC00;font-size:3em;margin-top:20px;"><strong>'.$data['fraudlabspro_score'].'</strong></div>';
+			$score = '<div style="color:#33CC00;font-size:3em;margin-top:20px;"><strong>'. $this->escaper->escapeHtml($data['fraudlabspro_score']) .'</strong></div>';
 		}
 
 		$countryCode = (($data['ip_geolocation']['country_code']) ?? ($data['ip_country'] ?? ''));
@@ -200,15 +200,15 @@ window.onload = function() {
 
 		switch($data['fraudlabspro_status']){
 			case 'REVIEW':
-				$status = '<div style="color:#FFCC00;font-size:2em;margin-top:10px;"><strong>'.$data['fraudlabspro_status'].'</strong></div>';
+				$status = '<div style="color:#FFCC00;font-size:2em;margin-top:10px;"><strong>'. $this->escaper->escapeHtml($data['fraudlabspro_status']) .'</strong></div>';
 			break;
 
 			case 'REJECT':
-				$status = '<div style="color:#cc0000;font-size:2em;margin-top:10px;"><strong>'.$data['fraudlabspro_status'].'</strong></div>';
+				$status = '<div style="color:#cc0000;font-size:2em;margin-top:10px;"><strong>'. $this->escaper->escapeHtml($data['fraudlabspro_status']) .'</strong></div>';
 			break;
 
 			case 'APPROVE':
-				$status = '<div style="color:#336600;font-size:2em;margin-top:10px;"><strong>'.$data['fraudlabspro_status'].'</strong></div>';
+				$status = '<div style="color:#336600;font-size:2em;margin-top:10px;"><strong>'. $this->escaper->escapeHtml($data['fraudlabspro_status']) .'</strong></div>';
 			break;
 
 			default:
@@ -255,7 +255,7 @@ window.onload = function() {
 									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="#87888d" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/></svg>
 								</a>
 							</p>
-							<p style="color:;margin-top:4px; margin-bottom:5px;font-weight:600;font-size:25px;">' . $data['fraudlabspro_score'] . '</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;font-weight:600;font-size:25px;">' . $this->escaper->escapeHtml($data['fraudlabspro_score']) . '</p>
 						</td>
 						<td>
 							<p style="color:#87888d;margin-bottom:0;margin-top:0;">FraudLabs Pro Status
@@ -275,21 +275,21 @@ window.onload = function() {
 					<tr style="margin-bottom:10px;vertical-align:top;">
 						<td width="20%">
 							<p style="color:#87888d;margin-bottom:0;margin-top:0;">IP Address</p>
-							<p style="color:;margin-top:4px; margin-bottom:5px;">' . $data['ip_address'] . '</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;">' . $this->escaper->escapeHtml($data['ip_address']) . '</p>
 						</td>
 						<td width="20%">
 							<p style="color:#87888d;margin-bottom:0;margin-top:0;">Coordinates</p>
-							<p style="color:;margin-top:4px; margin-bottom:5px;">' . $lat . ', ' . $lon . '</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;">' . $this->escaper->escapeHtml($lat) . ', ' . $this->escaper->escapeHtml($lon) . '</p>
 						</td>
 						<td colspan="2" width="50%">
 							<p style="color:#87888d;margin-bottom:0;margin-top:0;">IP Location</p>
-							<p style="color:;margin-top:4px; margin-bottom:5px;"><a href="https://www.geolocation.com/' . $data['ip_address'] . '" target="_blank">' . implode(', ', $location) . '</a></p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;"><a href="https://www.geolocation.com/' . $this->escaper->escapeHtml($data['ip_address']) . '" target="_blank">' . $this->escaper->escapeHtml(implode(', ', $location)) . '</a></p>
 						</td>
 					</tr>
 					<tr style="vertical-align:top;">
 						<td width="20%">
 							<p style="color:#87888d;margin-bottom:0;">Time Zone</p>
-							<p style="color:;margin-top:4px; margin-bottom:0;">' . $timezone . '</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">' . $this->escaper->escapeHtml($timezone) . '</p>
 						</td>
 						<td width="20%">
 							<p style="color:#87888d;margin-bottom:0;">Usage Type
@@ -298,7 +298,7 @@ window.onload = function() {
 								</a>
 							</p>
 							<p style="color:;margin-top:4px; margin-bottom:0;">
-								' . ( ($usageType == 'NA' ) ? '<a href="https://www.fraudlabspro.com/pricing" target="_blank">Upgrade to View »</a>' : $usageType ) . '
+								' . ( ($usageType == 'NA' ) ? '<a href="https://www.fraudlabspro.com/pricing" target="_blank">Upgrade to View »</a>' : $this->escaper->escapeHtml($usageType) ) . '
 							</p>
 						</td>
 						<td width="20%">
@@ -307,11 +307,11 @@ window.onload = function() {
 									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="#87888d" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/></svg>
 								</a>
 							</p>
-							<p style="color:;margin-top:4px; margin-bottom:0;">' . (($shipForward) ? 'Yes' : 'No') . '</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">' . $this->escaper->escapeHtml((($shipForward) ? 'Yes' : 'No')) . '</p>
 						</td>
 						<td>
 							<p style="color:#87888d;margin-bottom:0;">IP to Billing Distance</p>
-							<p style="color:;margin-top:4px; margin-bottom:0;">' . ( ( $distanceKm ) ? ( $distanceKm . ' KM / ' . $distanceMile . ' Miles' ) : '-' ) . '</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">' . ( ( $distanceKm ) ? ( $this->escaper->escapeHtml($distanceKm) . ' KM / ' . $this->escaper->escapeHtml($distanceMile) . ' Miles' ) : '-' ) . '</p>
 						</td>
 					</tr>
 				</table>
@@ -323,7 +323,7 @@ window.onload = function() {
 					<tr style="margin-bottom:10px;vertical-align:top;">
 						<td width="20%">
 							<p style="color:#87888d;margin-bottom:0;margin-top:0;">Free Email Domain</p>
-							<p style="color:;margin-top:4px; margin-bottom:5px;">' . (($freeEmail) ? 'Yes' : 'No') . '</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;">' . $this->escaper->escapeHtml((($freeEmail) ? 'Yes' : 'No')) . '</p>
 						</td>
 						<td width="20%">
 							<p style="color:#87888d;margin-bottom:0;margin-top:0;">Proxy IP
@@ -331,24 +331,24 @@ window.onload = function() {
 									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="#87888d" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/></svg>
 								</a>
 							</p>
-							<p style="color:;margin-top:4px; margin-bottom:5px;">' . (($proxyIP) ? 'Yes' : 'No') . '</p>
+							<p style="color:;margin-top:4px; margin-bottom:5px;">' . $this->escaper->escapeHtml((($proxyIP) ? 'Yes' : 'No')) . '</p>
 						</td>
 						
 						<td colspan="2" width="50%">
 							<p style="color:#87888d;margin-bottom:0;margin-top:0;">Phone Verified</p>
 							<p style="color:;margin-top:4px; margin-bottom:5px;">
-								' .  (isset($data['is_phone_verified']) ? $data['is_phone_verified'] : '<a href="https://marketplace.magento.com/hexasoft-module-fraudlabsprosmsverification.html" target="_blank">SMS Verification Extension Required</a>') . '
+								' .  (isset($data['is_phone_verified']) ? $this->escaper->escapeHtml($data['is_phone_verified']) : '<a href="https://marketplace.magento.com/hexasoft-module-fraudlabsprosmsverification.html" target="_blank">SMS Verification Extension Required</a>') . '
 							</p>
 						</td>
 					</tr>
 					<tr style="margin-bottom:10px;vertical-align:top;">
 						<td>
 							<p style="color:#87888d;margin-bottom:0;">IP in Blacklist</p>
-							<p style="color:;margin-top:4px; margin-bottom:0;">' .  (($blacklistIP) ? 'Yes' : 'No') . '</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">' .  $this->escaper->escapeHtml((($blacklistIP) ? 'Yes' : 'No')) . '</p>
 						</td>
 						<td>
 							<p style="color:#87888d;margin-bottom:0;">Email in Blacklist</p>
-							<p style="color:;margin-top:4px; margin-bottom:0;">' .  (($blacklistEmail) ? 'Yes' : 'No') . '</p>
+							<p style="color:;margin-top:4px; margin-bottom:0;">' .  $this->escaper->escapeHtml((($blacklistEmail) ? 'Yes' : 'No')) . '</p>
 						</td>
 						<td colspan="2">
 							<p style="color:#87888d;margin-bottom:0;">Rules Triggered
@@ -357,7 +357,7 @@ window.onload = function() {
 								</a>
 							</p>
 							<p style="color:;margin-top:4px; margin-bottom:0;">
-								' . (strpos($plan_name, 'Micro') ? '<a href="https://www.fraudlabspro.com/pricing" target="_blank">Upgrade to View »</a>' : $flpRule) . '
+								' . (strpos($plan_name, 'Micro') ? '<a href="https://www.fraudlabspro.com/pricing" target="_blank">Upgrade to View »</a>' : $this->escaper->escapeHtml($flpRule)) . '
 							</p>
 						</td>
 					</tr>
@@ -368,12 +368,12 @@ window.onload = function() {
 									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="#87888d" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/></svg>
 								</a>
 							</p>
-							<p style="color:;margin-top:4px; margin-bottom:20px;">' . (($flpErrCode) ? $flpErrCode . ': ' : '') . $flpErrMsg . '</p>
+							<p style="color:;margin-top:4px; margin-bottom:20px;">' . (($flpErrCode) ? $this->escaper->escapeHtml($flpErrCode) . ': ' : '') . $this->escaper->escapeHtml($flpErrMsg) . '</p>
 						</td>
 					</tr>
 					<tr style="vertical-align:top;">
 						<td colspan="4">
-							<p style="color:;margin-top:6px; margin-bottom:20px;">For full report, please visit <a href="https://www.fraudlabspro.com/merchant/transaction-details/' . $data['fraudlabspro_id'] . '" target="_blank">https://www.fraudlabspro.com/merchant/transaction-details/' . $data['fraudlabspro_id'] . '</a></p>
+							<p style="color:;margin-top:6px; margin-bottom:20px;">For full report, please visit <a href="https://www.fraudlabspro.com/merchant/transaction-details/' . $this->escaper->escapeHtml($data['fraudlabspro_id']) . '" target="_blank">https://www.fraudlabspro.com/merchant/transaction-details/' . $this->escaper->escapeHtml($data['fraudlabspro_id']) . '</a></p>
 						</td>
 					</tr>
 				</table>
@@ -385,9 +385,9 @@ window.onload = function() {
 					<form id="review-action">
 						<input type="hidden" name="apiKey" value="' . $data['api_key'] . '" />
 						<input type="hidden" name="flpId" value="' . $data['fraudlabspro_id'] . '" />
-						<a href="javascript:;" style="width:92px; display: inline-block; color: #55595c;text-align: center;vertical-align: middle; padding:8px 20px;font-size: 15px;line-height: 1.3rem;background-color:#0fb753;color:#ffffff;text-decoration:none;border-radius:4px;margin-bottom:10px;" name="approve">Approve</a>&nbsp;
-						<a href="javascript:;" style="width:92px; display: inline-block; color: #55595c;text-align: center;vertical-align: middle; padding:8px 20px;font-size: 15px;line-height: 1.3rem;background-color:#f1445a;color:#ffffff;text-decoration:none;border-radius:4px;margin-bottom:10px;" name="reject">Reject</a>&nbsp;
-						<a href="javascript:;" style="width:92px; display: inline-block; color: #55595c;text-align: center;vertical-align: middle; padding:8px 20px;font-size: 15px;line-height: 1.3rem;background-color:#3c4349;color:#ffffff;text-decoration:none;border-radius:4px;margin-bottom:10px;" name="reject-blacklist">Blacklist</a>
+						<input type="submit" name="flp-approve" style="display: inline-block; color: #55595c;text-align: center;vertical-align: middle; padding:8px 20px;font-size: 15px;line-height: 1.3rem;background-color:#0fb753;color:#ffffff;text-decoration:none;border-radius:4px;margin-bottom:10px;" value="Approve" />&nbsp;
+						<input type="submit" name="flp-reject" style="width:92px; display: inline-block; color: #55595c;text-align: center;vertical-align: middle; padding:8px 20px;font-size: 15px;line-height: 1.3rem;background-color:#f1445a;color:#ffffff;text-decoration:none;border-radius:4px;margin-bottom:10px;" value="Reject" />&nbsp;
+						<input type="submit" name="flp-reject-blacklist" style="display: inline-block; color: #55595c;text-align: center;vertical-align: middle; padding:8px 20px;font-size: 15px;line-height: 1.3rem;background-color:#3c4349;color:#ffffff;text-decoration:none;border-radius:4px;margin-bottom:10px;" value="Blacklist" />
 					</form>
 				</div>';
 		}
@@ -443,17 +443,5 @@ window.onload = function() {
 		curl_close($ch);
 
 		return false;
-	}
-
-	private function _unserialize($data){
-		if (class_exists(\Magento\Framework\Serialize\SerializerInterface::class)) {
-			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-			$serializer = $objectManager->create(\Magento\Framework\Serialize\SerializerInterface::class);
-			return $serializer->unserialize($data);
-		} else if (class_exists(\Magento\Framework\Unserialize\Unserialize::class)) {
-			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-			$serializer = $objectManager->create(\Magento\Framework\Unserialize\Unserialize::class);
-			return $serializer->unserialize($data);
-		}
 	}
 }

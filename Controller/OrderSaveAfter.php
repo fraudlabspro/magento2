@@ -48,13 +48,7 @@ class OrderSaveAfter implements ObserverInterface {
         $orderStatusNew = $order->getState();
 
         if ($order->getfraudlabspro_response()) {
-            if (is_null($order->getfraudlabspro_response())) {
-                if ($order->getfraudlabspro_response()) {
-                    $data = $this->_unserialize($order->getfraudlabspro_response());
-                }
-            } else {
-                $data = json_decode($order->getfraudlabspro_response(), true);
-            }
+            $data = json_decode($order->getfraudlabspro_response(), true);
 
             $flpId = $data['fraudlabspro_id'] ?? '';
             $apiKey = $this->scopeConfig->getValue('fraudlabspro/active_display/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
@@ -117,18 +111,6 @@ class OrderSaveAfter implements ObserverInterface {
         }
 
         return false;
-    }
-
-    private function _unserialize($data){
-        if (class_exists(\Magento\Framework\Serialize\SerializerInterface::class)) {
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $serializer = $objectManager->create(\Magento\Framework\Serialize\SerializerInterface::class);
-            return $serializer->unserialize($data);
-        } else if (class_exists(\Magento\Framework\Unserialize\Unserialize::class)) {
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $serializer = $objectManager->create(\Magento\Framework\Unserialize\Unserialize::class);
-            return $serializer->unserialize($data);
-        }
     }
 
 }

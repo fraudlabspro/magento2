@@ -75,11 +75,7 @@ class Observer implements ObserverInterface {
 
         $data = 0;
 
-        if (is_null($order->getfraudlabspro_response())) {
-            if ($order->getfraudlabspro_response()) {
-                $data = $this->_unserialize($order->getfraudlabspro_response());
-            }
-        } else {
+        if (!is_null($order->getfraudlabspro_response())) {
             $data = json_decode($order->getfraudlabspro_response(), true);
         }
 
@@ -201,7 +197,7 @@ class Observer implements ObserverInterface {
             'device_fingerprint' => (isset($_COOKIE['flp_device'])) ? $_COOKIE['flp_device'] : '',
             'flp_checksum' => (isset($_COOKIE['flp_checksum'])) ? $_COOKIE['flp_checksum'] : '',
             'source' => 'magento',
-            'source_version' => '2.7.4',
+            'source_version' => '2.7.5',
             'items' => $item_sku,
             'coupon_code' => $order->getCouponCode() ? $order->getCouponCode() : '',
             'coupon_amount' => $order->getCouponCode() ? -($order->getDiscountAmount()) : '',
@@ -378,7 +374,7 @@ class Observer implements ObserverInterface {
                 'format'    => 'json',
             )));
 
-            if (is_null($zapresponse) === FALSE) {
+            if (!is_null($zapresponse) === FALSE) {
                 $zapresult = json_decode($zapresponse, true);
                 $target_url = $zapresult['target_url'];
             }
@@ -480,21 +476,11 @@ class Observer implements ObserverInterface {
 
     private function _hash($s, $prefix = 'fraudlabspro_') {
         $hash = $prefix . $s;
-        for ($i = 0; $i < 65536; $i++)
+        for ($i = 0; $i < 65536; $i++) {
             $hash = sha1($prefix . $hash);
-        return $hash;
-    }
-
-    private function _unserialize($data){
-        if (class_exists(\Magento\Framework\Serialize\SerializerInterface::class)) {
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $serializer = $objectManager->create(\Magento\Framework\Serialize\SerializerInterface::class);
-            return $serializer->unserialize($data);
-        } else if (class_exists(\Magento\Framework\Unserialize\Unserialize::class)) {
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $serializer = $objectManager->create(\Magento\Framework\Unserialize\Unserialize::class);
-            return $serializer->unserialize($data);
         }
+        $hash2 = hash('sha256', $hash);
+        return $hash2;
     }
 
     private function _writelog($message) {
