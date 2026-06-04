@@ -1,5 +1,8 @@
 Revision History for FraudLabs Pro Magento2
 
+2.8.0 2026-05-18
+        Supported bill_to parameter for Screen Order API.
+
 2.7.5 2025-08-07
         Fixed security vulnerabilities.
 
