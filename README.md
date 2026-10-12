@@ -14,7 +14,7 @@ The features of this extension are:
 * Email notification of fraud orders
 * Mobile app notification of fraud orders
 
-This extension requires a valid API key to function. Please sign up for a free API key at https://www.fraudlabspro.com/sign-up.
+This extension requires a valid API key to function. Please [sign up for a free API key at FraudLabs Pro](https://www.fraudlabspro.com/checkout-micro).
 
 # Installation
 
